@@ -26,15 +26,22 @@ bun run lint         # oxlint (no output = clean)
 
 ## Invariants — break these and the site breaks
 
-1. **`base: '/pooprusteek/'` in `vite.config.ts` must equal the deploy slug.**
-   The site is served by aaaver-app from `sites/pooprusteek/` at
-   `aaaver.ru/pooprusteek/`. Dev and preview URLs also live under that base —
-   `http://localhost:5173/` alone 404s. `src/lib/route-store.ts` strips the
-   same base off `location.pathname`, so a changed slug breaks routing too.
-2. **Deep links only work because the host falls back to `index.html`.**
-   aaaver-app serves `sites/<slug>/index.html` for any path under the slug
-   that doesn't look like a file (`server/lib/static/sites.ts`). Keep routes
-   extensionless; never link to `/download.html`.
+1. **One source, two homes, and the base decides which.** The default build
+   (`base` = `/pooprusteek/`) is the demo slot at `aaaver.ru/pooprusteek/`
+   and must equal the aaaver-app slug. GitHub Pages
+   (`pooprusteek.github.io`) builds the same tree with `SITE_BASE=/` — see
+   `.github/workflows/pages.yml`. Dev and preview URLs live under the default
+   base: `http://localhost:5173/` alone 404s. `src/lib/route-store.ts` strips
+   `import.meta.env.BASE_URL` off the path, so never hard-code either prefix.
+   `SITE_URL` (where this build is served, used for `og:image`) and
+   `CANONICAL_URL` (the primary address, `https://pooprusteek.github.io` for
+   both builds) are filled into `index.html` by `vite.config.ts`.
+2. **Deep links must work without a server fallback.** aaaver-app falls back
+   to `index.html` for extensionless paths, but GitHub Pages does not — so
+   `vite.config.ts` emits `<route>/index.html` shells (own title,
+   description, canonical) plus a `noindex` `404.html`. **A new route has
+   to be added to `ROUTES` there as well as to `route-store.ts`,** or it
+   404s on Pages when opened directly.
 3. **The palette is not yours to invent.** Every color token in
    `src/index.css` `@theme` is the `default` (Midnight) preset from
    `pooprusteek/src/tui/theme.rs`, and `src/lib/themes.ts` carries all ten
@@ -84,8 +91,10 @@ bun run lint         # oxlint (no output = clean)
 
 ## Repo map
 
-- `src/App.tsx` — route → page table, plus the per-route `document.title` and
-  meta-description effect.
+- `src/App.tsx` — route → page table, plus the per-route `document.title`,
+  meta description, canonical and `og:url` effect.
+- `vite.config.ts` — base / site URL / canonical from the environment, and
+  the plugin that writes the per-route HTML shells and `404.html`.
 - `src/pages/`
   - `Home.tsx` — section order: Hero → Install → ZeroDollars → Features →
     RagTeaser → GoalLoop → ServeTeaser → Commands → ThemeGallery → TechStrip.
@@ -157,7 +166,15 @@ Hosting is aaaver-app: its Bun server serves `sites/<slug>/` at `/<slug>/`,
 slug = lowercase `[a-z0-9-]`, `index.html` at the folder root (satisfied by
 `dist/`).
 
-The supported path is CI: a push to `develop` runs `.github/workflows/demo.yml`,
+Two targets, both from CI, both guarded by `github.repository` so each
+workflow only runs in its own repo:
+
+- **GitHub Pages** — push `develop` to `main` of
+  `PoopRusteek/pooprusteek.github.io` (`git push pages develop:main`);
+  `.github/workflows/pages.yml` builds with `SITE_BASE=/` and deploys.
+- **aaaver.ru** — as below.
+
+For aaaver.ru a push to `develop` of `Aver005/pooprusteek-landing` runs `.github/workflows/demo.yml`,
 which reuses `Aver005/aaaver-app/.github/workflows/site-release.yml` to publish
 a `latest` release with `dist.tar.gz`. The `sites-updater` service on the VDS
 polls that release every ten minutes and swaps `sites/pooprusteek/` atomically.

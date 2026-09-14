@@ -94,8 +94,26 @@ release ships the full asset set.
 
 ## Deploy
 
-The site is hosted by **aaaver-app**, a Bun server that maps
-`sites/<slug>/` → `https://aaaver.ru/<slug>/`.
+The same source is published in two places:
+
+| Where | Base | How |
+|---|---|---|
+| **https://pooprusteek.github.io** | `/` | push to `main` of `PoopRusteek/pooprusteek.github.io` → `.github/workflows/pages.yml` |
+| **https://aaaver.ru/pooprusteek/** | `/pooprusteek/` | push to `develop` of `Aver005/pooprusteek-landing` → `demo.yml` → `sites-updater` |
+
+```sh
+git remote add pages https://github.com/PoopRusteek/pooprusteek.github.io.git
+git push origin develop          # aaaver.ru
+git push pages develop:main      # GitHub Pages
+```
+
+Both builds declare `pooprusteek.github.io` as canonical, so search engines
+don't treat them as competing copies. GitHub Pages has no SPA fallback, which
+is why the build writes a small HTML shell per route (`download/index.html`,
+`rag/index.html`, …) with its own title and description, plus a `404.html`.
+
+aaaver.ru hosting is **aaaver-app**, a Bun server that maps
+`sites/<slug>/` → `https://aaaver.ru/<slug>/`:
 
 ```
 push to develop
@@ -110,9 +128,9 @@ sites-updater (on the VDS, polls every 10 min)
 https://aaaver.ru/pooprusteek/        live, zero downtime, no restart
 ```
 
-The one rule everything hangs on: **`base: '/pooprusteek/'` in
-`vite.config.ts` must equal the slug**. Change one, change both — the router
-strips that same base off the path.
+The one rule everything hangs on: **the default `base` in `vite.config.ts`
+(`/pooprusteek/`) must equal the aaaver slug**, and the Pages build overrides
+it with `SITE_BASE=/`. The router strips whichever base was built in.
 
 ## Design system
 

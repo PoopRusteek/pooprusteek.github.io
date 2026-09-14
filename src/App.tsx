@@ -39,6 +39,11 @@ export default function App() {
     document
       .querySelector('meta[name="description"]')
       ?.setAttribute('content', t(`meta.${key}.desc`))
+    // Both copies of the site (aaaver.ru and GitHub Pages) name one address
+    // as canonical, per page — see vite.config.ts.
+    const canonical = `${__CANONICAL_URL__}${route === '/' ? '/' : `${route}/`}`
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonical)
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', canonical)
   }, [route, t, i18n.resolvedLanguage])
 
   return (
