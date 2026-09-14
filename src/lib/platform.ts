@@ -62,13 +62,16 @@ export function detectPlatform(): PlatformId | null {
 }
 
 /**
- * The UA string rarely admits to arm64 on Windows and Linux, so the guess is
- * refined asynchronously with a high-entropy hint when the browser has one.
+ * `undefined` until the browser has been asked (the prerender and the
+ * hydrating render can't know the visitor's OS), then the detected
+ * platform or `null`. The UA string rarely admits to arm64 on Windows and
+ * Linux, so the guess is refined with a high-entropy hint when available.
  */
-export function usePlatform(): PlatformId | null {
-  const [platform, setPlatform] = useState<PlatformId | null>(detectPlatform)
+export function usePlatform(): PlatformId | null | undefined {
+  const [platform, setPlatform] = useState<PlatformId | null | undefined>(undefined)
 
   useEffect(() => {
+    setPlatform(detectPlatform())
     const data = uaData()
     if (!data?.getHighEntropyValues) return
     let live = true
@@ -77,8 +80,6 @@ export function usePlatform(): PlatformId | null {
       .then(({ architecture }) => {
         if (!live || !architecture) return
         const arm = /arm/i.test(architecture)
-        // Read through the updater, not the closure: the hint resolves once
-        // and must not pin this effect to the current guess.
         setPlatform((current) => {
           if (!current || current.startsWith('macos')) return current
           return `${osOf(current)}-${arm ? 'arm64' : 'x86_64'}` as PlatformId

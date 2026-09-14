@@ -44,15 +44,32 @@ Two things it does that a static landing usually doesn't:
 
 | Route | What's on it |
 |---|---|
-| `/` | Hero with an OS-aware download action, install tabs, `$0.00` ledger, 12 capability cards, the RAG and `/serve` teasers, the GOAL loop, the command marquee, the theme gallery |
-| `/download` | Release badge (channel · version · date · live-or-cached), install tabs, every asset in the release with sizes and digests, channel switch, verification, self-update, first launch, requirements, uninstall |
-| `/rag` | The offline retrieval layer: dense + lexical + RRF, three corpora, deferred MCP schemas, `/search`, every knob, and what happens when a piece is missing |
-| `/serve` | The agent as a local OpenAI-compatible gateway: starting it, model-id routing, clients, and the defaults that keep it on loopback |
-| `/architecture` | One `tokio::select!` loop, a turn end to end, the module map, the safety rails, and the evidence behind the numbers |
+| `/` | Hero with an OS-aware download action, install tabs, "coming from Claude Code / Codex / Gemini CLI", capability cards, `$0.00`, GOAL loop, RAG and `/serve` teasers, command marquee, theme gallery |
+| `/download` | Release badge, install tabs, every asset with size and SHA-256, channel switch, verification, self-update, first launch, requirements, uninstall |
+| `/alternatives` | Claude Code, Codex CLI, Gemini CLI, aider, OpenCode and PoopRusteek in one table, plus an honest "choose it if / look elsewhere if" |
+| `/vs/claude-code` · `/vs/codex` · `/vs/gemini-cli` | Head-to-head: side-by-side table, what carries over, what differs, which to pick, moving over in three steps, sources |
+| `/rag` · `/serve` · `/architecture` | The offline retrieval layer, the OpenAI-compatible gateway, how the agent is built |
+| `/faq` | Thirteen straight answers, also published as FAQPage structured data |
 
-Routing is ~60 lines of `useSyncExternalStore` over the History API
-(`src/lib/route-store.ts`). Deep links work because the host falls back to
-`index.html` for extensionless paths under the slug.
+Every page exists in English and, under `/ru/`, in Russian.
+
+## Search
+
+The site is built to be found by people looking for a Claude Code or Codex
+replacement — by search engines that don't run JavaScript as much as by the
+ones that do:
+
+- **Static HTML for every page.** `scripts/prerender.ts` renders the React
+  tree at build time; the browser hydrates it. Crawlers get the full text,
+  one `<h1>`, and a page-specific `<head>`.
+- **Languages as URLs** with `hreflang` alternates (`en`, `ru`, `x-default`),
+  so Yandex indexes the Russian pages as Russian pages.
+- **Structured data:** `SoftwareApplication` (free, MIT, Windows/macOS/Linux),
+  `WebSite`, `Organization`, `BreadcrumbList`, `TechArticle` and `FAQPage`.
+- **`sitemap.xml`, `robots.txt` and `llms.txt`** at the root of the primary
+  site; one canonical address (`pooprusteek.github.io`) for both copies.
+- **IndexNow** after every Pages deploy (Bing, Yandex and friends). Google
+  reads the sitemap once the site is added to Search Console.
 
 ## Quick start
 
@@ -108,9 +125,9 @@ git push pages develop:main      # GitHub Pages
 ```
 
 Both builds declare `pooprusteek.github.io` as canonical, so search engines
-don't treat them as competing copies. GitHub Pages has no SPA fallback, which
-is why the build writes a small HTML shell per route (`download/index.html`,
-`rag/index.html`, …) with its own title and description, plus a `404.html`.
+don't treat them as competing copies. Every route is prerendered to its own
+`index.html` (`download/index.html`, `ru/vs/codex/index.html`, …), which is
+also what lets GitHub Pages — which has no SPA fallback — serve deep links.
 
 aaaver.ru hosting is **aaaver-app**, a Bun server that maps
 `sites/<slug>/` → `https://aaaver.ru/<slug>/`:
@@ -164,27 +181,28 @@ usable with animations off.
 ## Repo map
 
 ```
+site.config.ts               base, site URL, canonical URL, IndexNow key
+scripts/
+├── prerender.ts             route × language → static HTML, sitemap, robots, llms.txt
+└── indexnow.ts              submits the live sitemap after a deploy
 src/
-├── App.tsx                  route → page, per-route <title> and description
-├── index.css                @theme tokens, CRT overlay (.crt), grid bg, keyframes
-├── pages/                   Home · Download · Rag · Serve · Architecture
+├── main.tsx                 hydrate the prerendered page (or render fresh)
+├── entry-server.tsx         SSR entry for the prerenderer
+├── App.tsx                  route → page, <head> on client navigation
+├── index.css                @theme tokens, CRT overlay, grid bg, keyframes
+├── pages/                   Home · Download · Alternatives · Versus · Rag ·
+│                            Serve · Architecture · Faq
 ├── lib/
-│   ├── route-store.ts       the router (useSyncExternalStore + History API)
+│   ├── route-store.ts       pages × languages router
+│   ├── pages.ts             route → meta key and JSON-LD kind
 │   ├── themes.ts            the ten TUI presets, verbatim from theme.rs
 │   ├── theme-store.ts       applies one to :root, persists the choice
 │   ├── release.ts           GitHub release fetch, cache, static fallback
-│   ├── use-release.ts       one shared in-flight promise
-│   ├── platform.ts          OS/arch detection (UA string + UA-CH hint)
 │   ├── install.ts           every command the site tells you to run
-│   └── anim.ts              shared variants, repo URLs
+│   ├── platform.ts          OS/arch detection, after hydration
+│   └── use-hydrated.ts      hydration-safe browser state
 ├── i18n/locales/{en,ru}.ts  all copy; ru is typed `typeof en`
-└── components/
-    ├── ui/                  Link · CopyLine · SectionTitle · PageHero ·
-    │                        PageSection · Ledger · CodeBlock · Corners
-    ├── Nav · Footer · StatusBar
-    ├── Hero · Logo · TerminalDemo · DownloadCTA · InstallSection
-    ├── ZeroDollars · Features · RagTeaser · GoalLoop · ServeTeaser
-    └── Commands · ThemeGallery · ThemePicker · TechStrip
+└── components/              home sections, Nav/Footer/StatusBar, ui/
 ```
 
 ---

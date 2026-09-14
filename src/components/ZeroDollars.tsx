@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
+import { useReducedMotionSafe } from '../lib/use-hydrated'
 import { useTranslation } from 'react-i18next'
 import { rise, stagger, viewportOnce } from '../lib/anim'
 
@@ -54,7 +55,7 @@ export default function ZeroDollars() {
 // Fake-but-honest PoW readout: cycles hex nonces like the real solver does.
 function PowTicker() {
   const { t } = useTranslation()
-  const reduced = useReducedMotion()
+  const reduced = useReducedMotionSafe()
   const [nonce, setNonce] = useState(48213)
   useEffect(() => {
     if (reduced) return

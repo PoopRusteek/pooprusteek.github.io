@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { useTranslation } from 'react-i18next'
 import Link from './ui/Link'
 import ThemePicker from './ThemePicker'
 import { GITHUB_URL } from '../lib/anim'
-import { LANGS } from '../i18n'
-import { useRoute } from '../lib/route-store'
+import { LANGS, LANG_LABEL } from '../i18n'
+import { usePlace, useRoute } from '../lib/route-store'
 
-/** The site map is a command list — every page is the slash command that
- *  opens the same thing in the TUI. */
+/** The site map is a command list — every page reads like the slash
+ *  command that would open it. */
 const PAGES = [
   { to: '/download', label: '/download' },
+  { to: '/alternatives', label: '/alternatives' },
   { to: '/rag', label: '/rag' },
   { to: '/serve', label: '/serve' },
   { to: '/architecture', label: '/architecture' },
+  { to: '/faq', label: '/faq' },
 ] as const
 
 export default function Nav() {
@@ -37,7 +38,7 @@ export default function Nav() {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-1 lg:flex">
+        <div className="hidden items-center gap-1 xl:flex">
           {PAGES.map((p) => (
             <Link
               key={p.to}
@@ -66,7 +67,7 @@ export default function Nav() {
             onClick={() => setMenu((v) => !v)}
             aria-expanded={menu}
             aria-label="menu"
-            className="rounded border border-line px-2 py-1 text-xs text-dim transition-colors hover:border-accent hover:text-accent-soft lg:hidden"
+            className="rounded border border-line px-2 py-1 text-xs text-dim transition-colors hover:border-accent hover:text-accent-soft xl:hidden"
           >
             ≡
           </button>
@@ -80,9 +81,9 @@ export default function Nav() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden border-t border-line bg-panel-deep lg:hidden"
+            className="overflow-hidden border-t border-line bg-panel-deep xl:hidden"
           >
-            <div className="mx-auto grid max-w-6xl grid-cols-2 gap-1 px-4 py-3">
+            <div className="mx-auto grid max-w-6xl grid-cols-2 gap-1 px-4 py-3 sm:grid-cols-3">
               {PAGES.map((p) => (
                 <Link
                   key={p.to}
@@ -102,29 +103,31 @@ export default function Nav() {
   )
 }
 
+/** Same page, other language — a real link, so crawlers find both. */
 function LangSwitch() {
-  const { i18n } = useTranslation()
+  const { route, lang } = usePlace()
   return (
     <div
       role="group"
       aria-label="Language"
       className="flex items-center overflow-hidden rounded border border-line text-xs"
     >
-      {LANGS.map((l) => {
-        const active = i18n.resolvedLanguage === l.code
+      {LANGS.map((code) => {
+        const active = lang === code
         return (
-          <button
-            key={l.code}
-            onClick={() => i18n.changeLanguage(l.code)}
-            aria-pressed={active}
+          <Link
+            key={code}
+            to={route}
+            lang={code}
+            aria-current={active ? 'true' : undefined}
             className={`px-2 py-1 transition-colors ${
               active
                 ? 'bg-sel text-accent-soft'
                 : 'text-dim hover:text-accent-soft'
             }`}
           >
-            {l.label}
-          </button>
+            {LANG_LABEL[code]}
+          </Link>
         )
       })}
     </div>

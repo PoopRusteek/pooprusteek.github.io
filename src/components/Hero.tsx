@@ -35,6 +35,15 @@ export default function Hero() {
           {t('hero.tagline')}
         </motion.p>
 
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-8 max-w-3xl text-xl leading-snug font-bold text-fg sm:text-3xl"
+        >
+          {t('hero.h1')}
+        </motion.h1>
+
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}

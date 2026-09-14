@@ -3,11 +3,19 @@ import { useTranslation } from 'react-i18next'
 import Link from './ui/Link'
 import { GITHUB_URL, rise, viewportOnce } from '../lib/anim'
 
-const PAGES = [
+const PROJECT = [
   { to: '/download', label: '/download' },
   { to: '/rag', label: '/rag' },
   { to: '/serve', label: '/serve' },
   { to: '/architecture', label: '/architecture' },
+  { to: '/faq', label: '/faq' },
+]
+
+const COMPARE = [
+  { to: '/alternatives', label: '/alternatives' },
+  { to: '/vs/claude-code', label: 'vs Claude Code' },
+  { to: '/vs/codex', label: 'vs Codex CLI' },
+  { to: '/vs/gemini-cli', label: 'vs Gemini CLI' },
 ]
 
 export default function Footer() {
@@ -46,35 +54,49 @@ export default function Footer() {
         </div>
       </motion.div>
 
-      <div className="mx-auto mt-20 max-w-5xl border-t border-line pt-6">
-        <div className="flex flex-col items-center justify-between gap-4 text-xs text-dim sm:flex-row">
-          <p className="order-2 text-center sm:order-1 sm:text-left">
-            {t('footer.tagline')}
-          </p>
-          <nav className="order-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:order-2">
-            {PAGES.map((p) => (
-              <Link
-                key={p.to}
-                to={p.to}
-                className="text-dim transition-colors hover:text-accent-soft"
+      <div className="mx-auto mt-20 max-w-5xl border-t border-line pt-8">
+        <div className="grid gap-8 text-xs sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:gap-12">
+          <div className="min-w-0 text-dim">
+            <p>{t('footer.tagline')}</p>
+            <p className="mt-3">
+              <a
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-accent-soft hover:text-accent"
               >
-                {p.label}
-              </Link>
-            ))}
-            <a
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="text-accent-soft hover:text-accent"
-            >
-              github.com/Aver005/pooprusteek
-            </a>
-            <span>
-              /quit<span className="animate-blink text-accent-soft">▊</span>
-            </span>
-          </nav>
+                github.com/Aver005/pooprusteek
+              </a>{' '}
+              · /quit<span className="animate-blink text-accent-soft">▊</span>
+            </p>
+          </div>
+          <FooterLinks title={t('footer.project')} links={PROJECT} />
+          <FooterLinks title={t('footer.compare')} links={COMPARE} />
         </div>
       </div>
     </footer>
+  )
+}
+
+function FooterLinks({
+  title,
+  links,
+}: {
+  title: string
+  links: Array<{ to: string; label: string }>
+}) {
+  return (
+    <nav aria-label={title} className="min-w-0">
+      <p className="tracking-[0.2em] text-dim uppercase">{title}</p>
+      <ul className="mt-3 space-y-2">
+        {links.map((l) => (
+          <li key={l.to}>
+            <Link to={l.to} className="text-soft transition-colors hover:text-accent-soft">
+              {l.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
 }

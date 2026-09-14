@@ -4,22 +4,24 @@ Guidance for Claude Code (and any other agent) working in this repository.
 
 ## What this is
 
-The marketing site for **PoopRusteek** (`../pooprusteek`) — a free,
-terminal-native Rust TUI coding agent driving DeepSeek's reverse-engineered
-web API. This repo is the *website about it*, not the agent itself.
+The website for **PoopRusteek** (`../pooprusteek`) — a free, terminal-native
+Rust TUI coding agent driving DeepSeek's reverse-engineered web API. This repo
+is the *website about it*, not the agent itself.
 
-Five pages, no backend, no state library: a landing page plus
-`/download`, `/rag`, `/serve` and `/architecture`.
+Ten pages in two languages, every one prerendered to static HTML and hydrated
+by React: `/`, `/download`, `/alternatives`, `/vs/claude-code`, `/vs/codex`,
+`/vs/gemini-cli`, `/rag`, `/serve`, `/architecture`, `/faq`, and the same
+under `/ru/`. No backend, no state library.
 
 Stack: **Bun** (runtime + package manager — never npm/pnpm/yarn), **Vite 8**,
 **React 19 + TypeScript (strict)**, **Tailwind v4** (CSS-first config via
 `@theme` in `src/index.css`, no tailwind.config file), **Motion 12**
-(`motion/react` — the framer-motion successor), **oxlint**.
+(`motion/react`), **i18next**, **oxlint**.
 
 ```sh
 bun install
-bun dev              # http://localhost:5173/pooprusteek/
-bun run build        # tsc -b && vite build → dist/
+bun dev              # http://localhost:5173/pooprusteek/  (client-rendered)
+bun run build        # tsc → vite build → vite build --ssr → scripts/prerender.ts
 bun run preview      # serves dist/ at http://localhost:4173/pooprusteek/
 bun run lint         # oxlint (no output = clean)
 ```
@@ -27,172 +29,133 @@ bun run lint         # oxlint (no output = clean)
 ## Invariants — break these and the site breaks
 
 1. **One source, two homes, and the base decides which.** The default build
-   (`base` = `/pooprusteek/`) is the demo slot at `aaaver.ru/pooprusteek/`
-   and must equal the aaaver-app slug. GitHub Pages
-   (`pooprusteek.github.io`) builds the same tree with `SITE_BASE=/` — see
-   `.github/workflows/pages.yml`. Dev and preview URLs live under the default
-   base: `http://localhost:5173/` alone 404s. `src/lib/route-store.ts` strips
+   (`SITE_BASE` = `/pooprusteek/`) is the demo slot at `aaaver.ru/pooprusteek/`
+   and must equal the aaaver-app slug. GitHub Pages (`pooprusteek.github.io`,
+   the primary address) builds the same tree with `SITE_BASE=/` — see
+   `.github/workflows/pages.yml`. All build-time settings live in
+   `site.config.ts`. `src/lib/route-store.ts` strips
    `import.meta.env.BASE_URL` off the path, so never hard-code either prefix.
-   `SITE_URL` (where this build is served, used for `og:image`) and
-   `CANONICAL_URL` (the primary address, `https://pooprusteek.github.io` for
-   both builds) are filled into `index.html` by `vite.config.ts`.
-2. **Deep links must work without a server fallback.** aaaver-app falls back
-   to `index.html` for extensionless paths, but GitHub Pages does not — so
-   `vite.config.ts` emits `<route>/index.html` shells (own title,
-   description, canonical) plus a `noindex` `404.html`. **A new route has
-   to be added to `ROUTES` there as well as to `route-store.ts`,** or it
-   404s on Pages when opened directly.
-3. **The palette is not yours to invent.** Every color token in
+2. **Render must not touch the browser.** Every page is rendered by
+   `react-dom/server` at build time and then *hydrated*; the first client
+   render has to produce the same markup. So during render: no `window`,
+   `navigator`, `localStorage`, `matchMedia`, `Date.now()` or
+   `Math.random()`. Browser-dependent state starts neutral and is filled in
+   an effect — see `usePlatform` (returns `undefined` until asked),
+   `useHydrated` and `useReducedMotionSafe` in `src/lib/`. External stores
+   (`theme-store`, `route-store`) return the same snapshot on server and
+   client. A hydration mismatch shows up as a `console.error` — the test in
+   "Verifying changes" catches it.
+3. **The language is in the URL.** `/download/` is English, `/ru/download/`
+   is Russian; `route-store.ts` parses the prefix and switches i18next
+   before anything renders. Never pick a language from storage or the
+   browser — search engines only see URLs, and a prerendered page must
+   hydrate in the language it was rendered in. Internal links go through
+   `ui/Link`, which keeps the current language and always ends non-root
+   paths in `/` (the prerendered `route/index.html` and the canonical URL).
+4. **A new route touches four places:** `ROUTES` in `route-store.ts`,
+   `PAGE_META` in `src/lib/pages.ts` (meta key + JSON-LD kind), `PAGES` in
+   `App.tsx`, and `meta.<key>.{title,desc,crumb}` in both locales. The
+   prerenderer, sitemap, hreflang and llms.txt follow from those.
+5. **The palette is not yours to invent.** Every color token in
    `src/index.css` `@theme` is the `default` (Midnight) preset from
    `pooprusteek/src/tui/theme.rs`, and `src/lib/themes.ts` carries all ten
-   presets from that same table. New UI must use existing tokens (`ink`,
-   `panel`, `panel-deep`, `fg`, `accent`, `accent-dim`, `accent-soft`,
-   `focus`, `line`, `dim`, `soft`, `err`, `ok`, `warn`, `sel`) — **never a
-   hard-coded hex**, because `lib/theme-store.ts` repaints the page by
-   rewriting those variables on `:root` at runtime. A component that needs a
-   literal color (a Motion `animate` value, an inline `style`) reads it from
-   `useTheme().colors`. Re-sync `themes.ts` by parsing theme.rs, not by hand.
-4. **One font: JetBrains Mono Variable** (self-hosted via
-   `@fontsource-variable/jetbrains-mono`, imported in index.css). No second
-   typeface — the entire aesthetic is "the TUI, but a webpage".
-5. **Download links come from the GitHub API, never from a literal.** The
-   stable release can lag behind the installers (it did on launch), so
-   `src/lib/release.ts` picks the newest release that actually ships every
-   required asset and `src/lib/install.ts` spells the matching command —
-   including `--channel dev` when that is what the recommended build is.
-   Hard-coding `releases/latest/download/...` hands out 404s. The static
-   `FALLBACK` (rolling `dev` tag) is what renders before the fetch lands and
-   when GitHub is unreachable; keep its asset names in sync with
+   presets. New UI uses existing tokens (`ink`, `panel`, `panel-deep`, `fg`,
+   `accent`, `accent-dim`, `accent-soft`, `focus`, `line`, `dim`, `soft`,
+   `err`, `ok`, `warn`, `sel`) — **never a hard-coded hex**: the theme store
+   repaints the page by rewriting those variables on `:root`. A literal
+   color (Motion `animate`, inline `style`) comes from `useTheme().colors`.
+6. **One font: JetBrains Mono Variable.** No second typeface.
+7. **Download links come from the GitHub API, never from a literal.**
+   `src/lib/release.ts` picks the newest release that ships every required
+   asset and `src/lib/install.ts` spells the matching command (with
+   `--channel dev` while that's the recommended build). The static
+   `FALLBACK` (rolling `dev` tag) renders in the HTML and whenever GitHub is
+   unreachable; keep its asset names in sync with
    `pooprusteek/scripts/ci/collect-assets.sh`.
-6. **Every JS-timer animation must respect reduced motion.** Motion
-   components are covered globally by `MotionConfig reducedMotion="user"` in
-   `main.tsx`, but `setTimeout`/`setInterval` animations (TerminalDemo
-   typewriter, spinners, PowTicker, GoalLoop cycle) each guard with
-   `useReducedMotion()` — keep doing that for anything new, and give it a
-   sensible static end-state.
-7. **Don't put Tailwind `transition-*` classes on `motion.*` elements** —
-   they fight Motion's inline styles and stutter. `transition-colors` for
-   pure CSS hovers on plain elements is fine (used on cards/links).
-8. **Grid children that must shrink need `min-w-0`.** Already bitten twice:
-   the PoW ticker's `truncate` (= `white-space: nowrap`) inflated its grid
-   column's min-content and caused horizontal scroll on mobile. Terminal-ish
-   single-line content inside any grid/flex column → `min-w-0` on the item.
-9. **Copy is English first**: `src/i18n/locales/en.ts` is the source of
-   truth and `ru.ts` is typed `typeof en`, so an untranslated key fails the
-   build. Tone is the project's — irreverent about the name, dead serious
-   about the engineering ("No API key. No subscription. No fluff."). Real
-   TUI strings (status badges, slash commands, config snippets, the status
-   bar format) are quoted verbatim in components, not in the locales:
-   they're the product, not copy.
-10. **Claims are checkable.** Numbers on this site (MRR 0.927 / 0.836, ~900
-    tests, 62k lines, 51 commands, 16 tools, glibc 2.39+, port 7667) come
-    from the agent repo. If you can't point at the file that says it, don't
-    put it on the page.
+8. **Every JS-timer animation respects reduced motion** through
+   `useReducedMotionSafe()`, with a static end state.
+9. **Don't put Tailwind `transition-*` classes on `motion.*` elements.**
+10. **Grid children that must shrink need `min-w-0`.** Wide tables go in an
+    `overflow-x-auto` wrapper; the page itself never scrolls sideways.
+11. **Copy is English first**: `locales/en.ts` is the source of truth and
+    `ru.ts` is typed `typeof en`, so an untranslated key fails the build.
+    Russian copy is written for Russian searches, not machine-translated.
+    Real TUI strings (badges, slash commands, config snippets) stay verbatim
+    in components.
+12. **Claims are checkable.** Numbers about PoopRusteek come from the agent
+    repo. **Facts about other tools** (Claude Code, Codex CLI, Gemini CLI,
+    aider, OpenCode) come from their official docs or repositories, carry a
+    "checked on" date and a sources list on the page, and never state that a
+    competitor *lacks* something unless that is verified. Comparison pages
+    say when the competitor is the better choice — that honesty is the point.
+13. **No comments in shipped HTML.** `index.html` is a template the
+    prerenderer rewrites; explanations belong in `scripts/prerender.ts`.
 
 ## Repo map
 
-- `src/App.tsx` — route → page table, plus the per-route `document.title`,
-  meta description, canonical and `og:url` effect.
-- `vite.config.ts` — base / site URL / canonical from the environment, and
-  the plugin that writes the per-route HTML shells and `404.html`.
-- `src/pages/`
-  - `Home.tsx` — section order: Hero → Install → ZeroDollars → Features →
-    RagTeaser → GoalLoop → ServeTeaser → Commands → ThemeGallery → TechStrip.
-  - `Download.tsx` — release badge, OS-aware primary action, the reused
-    install tabs, the full asset table (channel switch, sizes, SHA-256 from
-    the API), verification, update channels, first run, requirements.
-  - `Rag.tsx` · `Serve.tsx` · `Architecture.tsx` — the technology pages.
+- `site.config.ts` — base, site URL, canonical URL, IndexNow key.
+- `scripts/prerender.ts` — renders every route × language into
+  `dist/[ru/]<route>/index.html` with a per-page `<head>` (title,
+  description, canonical, hreflang, Open Graph, JSON-LD), `404.html`, and
+  for the primary build `sitemap.xml`, `robots.txt`, `llms.txt` and the
+  IndexNow key file.
+- `scripts/indexnow.ts` — submits the live sitemap to IndexNow after deploy.
+- `src/entry-server.tsx` — the SSR entry the prerenderer imports.
+- `src/main.tsx` — hydrates when the root was prerendered for the URL's
+  route and language, client-renders otherwise.
+- `src/App.tsx` — route → page, and the `<head>` effect for client navigation.
 - `src/lib/`
-  - `route-store.ts` — the whole router: `useRoute`, `navigate`, `href`,
-    `BASE`. `useSyncExternalStore`, no dependency, no context.
-  - `theme-store.ts` + `themes.ts` — the ten TUI presets and the code that
-    writes them onto `:root` (including the CRT overlay tints, which are
-    derived per theme so Paper Light doesn't get dark scanlines).
-  - `release.ts` — GitHub release fetch, shaping, 30-minute sessionStorage
-    cache, static fallback, size/date/version formatting.
-  - `use-release.ts` — one shared in-flight promise for all consumers.
-  - `platform.ts` — OS/arch detection (UA string, refined by UA-CH).
-  - `install.ts` — every install/uninstall/verify command shown on the site.
-  - `anim.ts` — shared `rise`/`stagger` variants, `viewportOnce`, and the
-    re-exported repo URLs.
-- `src/components/`
-  - `ui/` — `Link` (router-aware `<a>`), `CopyLine`, `SectionTitle`,
-    `PageHero`, `PageSection`, `Ledger`, `CodeBlock`, `Corners`.
-  - `Logo.tsx` — POOPRUSTEEK wordmark; per-letter color wave built from the
-    active theme, replicating the TUI landing logo.
-  - `TerminalDemo.tsx` — scripted typewriter session. The whole demo is the
-    `SCRIPT` array (`typed: true` lines get char-by-char typing, others
-    appear whole after `pause` ms); it loops forever. Keep status labels
-    real (`[GOAL ON]`, `[EVALUATING]`, `[GOAL DONE]`…).
-  - `DownloadCTA.tsx` — the hero's OS-aware action: a button on Windows, the
-    `curl … | sh` line on macOS/Linux, a link to `/download` otherwise.
-  - `InstallSection.tsx` — the three-tab installation block, reused as-is on
-    the download page.
-  - `ThemePicker.tsx` / `ThemeGallery.tsx` — `/themes` in the nav and as a
-    section; each gallery card previews a preset in *its own* colors.
-  - `ZeroDollars` · `Features` · `RagTeaser` · `GoalLoop` · `ServeTeaser` ·
-    `Commands` · `TechStrip` · `Footer` · `StatusBar` — home sections.
-- `public/og.png` — 1200×630 link-preview capture of the hero; regenerate it
-  when the hero changes (see below).
-- `docs/hero.webp` — README screenshot.
+  - `route-store.ts` — pages × languages router (`usePlace`, `navigate`, `href`, `parse`).
+  - `pages.ts` — route → meta key and JSON-LD kind.
+  - `theme-store.ts` + `themes.ts` — the ten TUI presets.
+  - `release.ts`, `use-release.ts`, `install.ts`, `platform.ts` — downloads.
+  - `use-hydrated.ts` — `useHydrated`, `useReducedMotionSafe`.
+- `src/pages/` — `Home`, `Download`, `Alternatives`, `Versus` (all three
+  `/vs/*` pages, copy under `vs.<id>`), `Rag`, `Serve`, `Architecture`, `Faq`.
+- `src/components/` — home sections (`Hero`, `InstallSection`, `Switching`,
+  `Features`, `ZeroDollars`, `GoalLoop`, `RagTeaser`, `Commands`,
+  `ServeTeaser`, `ThemeGallery`, `TechStrip`), chrome (`Nav`, `Footer`,
+  `StatusBar`, `ThemePicker`), and `ui/` building blocks.
+- `public/og.png` — 1200×630 link preview; `docs/hero.webp` — README shot.
 
 ## Verifying changes
 
-There are no tests; verification is visual:
-
-1. `bun run build` (tsc catches type errors) and `bun run lint`.
-2. `bun run preview` in background, then drive it with a headless browser at
-   `http://localhost:4173/pooprusteek/`.
-3. Check desktop (1440×900) and mobile (390×844), **on every route**. On
-   mobile always run the horizontal-overflow probe — this site's most likely
-   regression: `document.documentElement.scrollWidth >
-   document.documentElement.clientWidth` must be `false`. Probe while
-   scrolling the whole page; sections mount their content on `whileInView`,
-   and a full-page screenshot taken without scrolling first will show them
-   still transparent.
-4. Click through the router (nav link → back button), flip a theme (it must
-   survive a reload and apply on every page), and switch to RU.
-5. For a hero screenshot with the terminal in a good state, wait for
-   `[GOAL DONE]` **inside the demo box** rather than anywhere on the page —
-   several sections quote that badge, so a page-wide match fires while the
-   demo is still on its first line. Find the box from its title bar
-   (`~/dev/that-one-project` → `closest('div[class*="rounded-lg"]')`).
-6. `docs/hero.webp` is that shot at 1440×1120 (lossless WebP);
-   `public/og.png` is the same state at 1200×630, clipped from the top.
+1. `bun run build` and `bun run lint`.
+2. Check the static HTML without a browser: `dist/<route>/index.html` must
+   contain the page's text, one `<h1>`, the right `<html lang>`, canonical,
+   hreflang and a JSON-LD block that parses.
+3. `bun run preview`, then drive a headless browser over **every route in
+   both languages**, desktop 1440×900 and mobile 390×844. Required: no
+   `console.error` (hydration mismatches land there), `<html lang>` matches
+   the URL, and `scrollWidth > clientWidth` is `false` while scrolling the
+   whole page (sections reveal on `whileInView`; scroll before full-page
+   screenshots).
+4. Click through: nav link → back button, language switch (same page,
+   other language), a theme change surviving a reload.
+5. For the Pages variant, build with `SITE_BASE=/ SITE_URL=… CANONICAL_URL=…`
+   and serve `dist/` with a plain static server (no SPA fallback).
+6. Hero screenshots: wait for `[GOAL DONE]` inside the demo box, not
+   anywhere on the page (several sections quote that badge).
+   `docs/hero.webp` is 1440×1120 lossless WebP; `public/og.png` 1200×630.
 
 ## Deploying
 
-Hosting is aaaver-app: its Bun server serves `sites/<slug>/` at `/<slug>/`,
-slug = lowercase `[a-z0-9-]`, `index.html` at the folder root (satisfied by
-`dist/`).
+Both targets build in CI, each workflow guarded by `github.repository`:
 
-Two targets, both from CI, both guarded by `github.repository` so each
-workflow only runs in its own repo:
-
-- **GitHub Pages** — push `develop` to `main` of
-  `PoopRusteek/pooprusteek.github.io` (`git push pages develop:main`);
-  `.github/workflows/pages.yml` builds with `SITE_BASE=/` and deploys.
-- **aaaver.ru** — as below.
-
-For aaaver.ru a push to `develop` of `Aver005/pooprusteek-landing` runs `.github/workflows/demo.yml`,
-which reuses `Aver005/aaaver-app/.github/workflows/site-release.yml` to publish
-a `latest` release with `dist.tar.gz`. The `sites-updater` service on the VDS
-polls that release every ten minutes and swaps `sites/pooprusteek/` atomically.
-A manual copy into `sites/pooprusteek/` works too, but the updater will
-replace it as soon as the registered release changes — it compares the
-`version` in `sites/<slug>/.release.json`.
-
-Live check: `https://aaaver.ru/api/sites` lists mounted slugs.
+- **GitHub Pages** (primary) — `git push pages develop:main` to
+  `PoopRusteek/pooprusteek.github.io`. `pages.yml` builds with `SITE_BASE=/`,
+  deploys, then pings IndexNow.
+- **aaaver.ru** — `git push origin develop` to `Aver005/pooprusteek-landing`.
+  `demo.yml` reuses `Aver005/aaaver-app/.github/workflows/site-release.yml`
+  to publish a `latest` release with `dist.tar.gz`; `sites-updater` on the VDS
+  polls it every ten minutes and swaps `sites/pooprusteek/`. A manual copy
+  into that folder is replaced as soon as the registered release changes.
 
 ## Conventions
 
-- Components: one file per section in `src/components/`, shared pieces in
-  `src/components/ui/`, default export, local helpers below the default
-  export in the same file.
-- Reveal-on-scroll: use the shared `rise`/`stagger` variants with
-  `viewport={viewportOnce}` — don't hand-roll new IntersectionObserver logic.
-- Internal links go through `ui/Link` (or `navigate`), never a bare `<a>`
-  with a site-relative href — the bare one triggers a full page load.
-- Commits are the user's job; don't run `git commit`/`git push` unless
-  explicitly asked. The sibling agent repo uses conventional commits with
-  gitmoji (`feat(landing): ✨ …`) — follow that if asked to commit here.
+- One file per section in `src/components/`, shared pieces in `ui/`, default
+  export, local helpers below it.
+- Reveal-on-scroll uses the shared `rise`/`stagger` variants with
+  `viewport={viewportOnce}`.
+- Commits are the user's job; don't commit or push unless explicitly asked.
+  Style: Conventional Commits with gitmoji and a Keep a Changelog body.

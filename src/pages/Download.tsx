@@ -262,11 +262,12 @@ function Recommended({
   platform,
   info,
 }: {
-  platform: PlatformId | null
+  platform: PlatformId | null | undefined
   info: ReleaseInfo
 }) {
   const { t } = useTranslation()
 
+  if (platform === undefined) return null // not asked the browser yet
   if (!platform) {
     return (
       <p className="max-w-xl text-sm leading-7 text-dim">

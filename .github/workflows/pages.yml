@@ -44,3 +44,18 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  indexnow:
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun scripts/indexnow.ts
+        env:
+          SITE_URL: https://pooprusteek.github.io
+          CANONICAL_URL: https://pooprusteek.github.io

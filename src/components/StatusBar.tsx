@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import {
   motion,
   useMotionValueEvent,
-  useReducedMotion,
   useScroll,
 } from 'motion/react'
+import { useReducedMotionSafe } from '../lib/use-hydrated'
 import { useRelease } from '../lib/use-release'
 import { versionLabel } from '../lib/release'
 
@@ -44,7 +44,7 @@ export default function StatusBar() {
 function Spinner() {
   const FRAMES = ['|', '/', '-', '\\']
   const [i, setI] = useState(0)
-  const reduced = useReducedMotion()
+  const reduced = useReducedMotionSafe()
   useEffect(() => {
     if (reduced) return
     const id = window.setInterval(() => setI((v) => (v + 1) % 4), 140)

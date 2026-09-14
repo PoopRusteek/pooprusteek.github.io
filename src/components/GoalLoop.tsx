@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useReducedMotionSafe } from '../lib/use-hydrated'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '../lib/theme-store'
 import SectionTitle from './ui/SectionTitle'
@@ -21,11 +22,14 @@ export default function GoalLoop() {
   const { t } = useTranslation()
   const { colors } = useTheme()
   const logs = t('goal.logs', { returnObjects: true })
-  const reduced = useReducedMotion()
-  const [i, setI] = useState(reduced ? STATES.length - 1 : 0)
+  const reduced = useReducedMotionSafe()
+  const [i, setI] = useState(0)
 
   useEffect(() => {
-    if (reduced) return
+    if (reduced) {
+      setI(STATES.length - 1) // static end state: [GOAL DONE]
+      return
+    }
     const id = window.setTimeout(
       () => setI((v) => (v + 1) % STATES.length),
       STATES[i].hold,

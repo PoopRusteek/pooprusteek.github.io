@@ -5,51 +5,52 @@ import Footer from './components/Footer'
 import StatusBar from './components/StatusBar'
 import Home from './pages/Home'
 import Download from './pages/Download'
+import Alternatives from './pages/Alternatives'
+import Versus from './pages/Versus'
 import Rag from './pages/Rag'
 import Serve from './pages/Serve'
 import Architecture from './pages/Architecture'
-import { useRoute, type Route } from './lib/route-store'
+import Faq from './pages/Faq'
+import { BASE, href, usePlace, type Route } from './lib/route-store'
+import { PAGE_META } from './lib/pages'
 
 const PAGES: Record<Route, () => React.ReactElement> = {
   '/': Home,
   '/download': Download,
+  '/alternatives': Alternatives,
+  '/vs/claude-code': () => <Versus id="claudeCode" />,
+  '/vs/codex': () => <Versus id="codex" />,
+  '/vs/gemini-cli': () => <Versus id="geminiCli" />,
   '/rag': Rag,
   '/serve': Serve,
   '/architecture': Architecture,
+  '/faq': Faq,
 }
 
-/** i18n key per route — the tab title and the meta description follow the
- *  page, the same way they would on a multi-document site. */
-const META = {
-  '/': 'home',
-  '/download': 'download',
-  '/rag': 'rag',
-  '/serve': 'serve',
-  '/architecture': 'architecture',
-} as const satisfies Record<Route, string>
-
 export default function App() {
-  const route = useRoute()
-  const { t, i18n } = useTranslation()
+  const { route, lang } = usePlace()
+  const { t } = useTranslation()
   const Page = PAGES[route]
 
+  // The prerendered HTML already carries all of this for the first page;
+  // the effect keeps <head> truthful after client-side navigation.
   useEffect(() => {
-    const key = META[route]
+    const { key } = PAGE_META[route]
     document.title = t(`meta.${key}.title`)
-    document
-      .querySelector('meta[name="description"]')
-      ?.setAttribute('content', t(`meta.${key}.desc`))
-    // Both copies of the site (aaaver.ru and GitHub Pages) name one address
-    // as canonical, per page — see vite.config.ts.
-    const canonical = `${__CANONICAL_URL__}${route === '/' ? '/' : `${route}/`}`
-    document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonical)
-    document.querySelector('meta[property="og:url"]')?.setAttribute('content', canonical)
-  }, [route, t, i18n.resolvedLanguage])
+    const set = (selector: string, attr: string, value: string) =>
+      document.querySelector(selector)?.setAttribute(attr, value)
+    const canonical = `${__CANONICAL_URL__}${href(route, lang).slice(BASE.length)}`
+    set('meta[name="description"]', 'content', t(`meta.${key}.desc`))
+    set('link[rel="canonical"]', 'href', canonical)
+    set('meta[property="og:url"]', 'content', canonical)
+    set('meta[property="og:title"]', 'content', t(`meta.${key}.title`))
+    set('meta[property="og:description"]', 'content', t(`meta.${key}.desc`))
+  }, [route, lang, t])
 
   return (
     <div id="top" className="crt pb-8">
       <Nav />
-      <Page />
+      <Page key={`${lang}${route}`} />
       <Footer />
       <StatusBar />
     </div>

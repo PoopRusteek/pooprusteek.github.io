@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
+import { useReducedMotionSafe } from '../lib/use-hydrated'
 
 type Seg = { t: string; c?: string }
 type Line = { segs: Seg[]; typed?: boolean; pause?: number }
@@ -40,13 +41,17 @@ const LINE_MS = 260
 const RESTART_MS = 1600
 
 export default function TerminalDemo() {
-  const reduced = useReducedMotion()
-  const [lineCount, setLineCount] = useState(reduced ? SCRIPT.length : 0)
+  const reduced = useReducedMotionSafe()
+  const [lineCount, setLineCount] = useState(0)
   const [charCount, setCharCount] = useState(0)
   const timer = useRef<number>(undefined)
 
   useEffect(() => {
-    if (reduced) return
+    if (reduced) {
+      // static end state: the whole session, typed
+      setLineCount(SCRIPT.length)
+      return
+    }
     const line = SCRIPT[lineCount]
 
     if (!line) {
@@ -133,7 +138,7 @@ export default function TerminalDemo() {
 function Spinner() {
   const FRAMES = ['|', '/', '-', '\\']
   const [i, setI] = useState(0)
-  const reduced = useReducedMotion()
+  const reduced = useReducedMotionSafe()
   useEffect(() => {
     if (reduced) return
     const id = window.setInterval(() => setI((v) => (v + 1) % 4), 140)

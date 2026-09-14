@@ -6,25 +6,416 @@
 const en = {
   meta: {
     home: {
-      title: 'PoopRusteek 🧻 — free terminal coding agent',
-      desc: 'A free, terminal-native coding agent written in Rust. Parallel chats, sub-agents, a GOAL loop, local RAG, MCP and an OpenAI-compatible server. Installers for Windows, macOS and Linux.',
+      title: 'PoopRusteek — free Claude Code & Codex alternative for the terminal',
+      desc: 'Free, open-source AI coding agent for the terminal, written in Rust. No API key, no subscription: parallel chats, sub-agents, MCP, local RAG. Windows, macOS, Linux.',
+      crumb: 'Home',
     },
     download: {
-      title: 'Download — PoopRusteek 🧻',
-      desc: 'Installers and prebuilt binaries for Windows, macOS and Linux, with sizes, SHA-256 digests, update channels and verification steps.',
+      title: 'Download PoopRusteek for Windows, macOS and Linux',
+      desc: 'Windows installer, one-line install for macOS and Linux, portable binaries with SHA-256 checksums. A free terminal coding agent that updates itself.',
+      crumb: 'Download',
+    },
+    alternatives: {
+      title: 'Free Claude Code alternatives compared (2026) — PoopRusteek',
+      desc: 'Claude Code, Codex CLI, Gemini CLI, aider, OpenCode and PoopRusteek side by side: licence, what you pay, which models, where it runs. Checked September 2026.',
+      crumb: 'Alternatives',
+    },
+    vsClaudeCode: {
+      title: 'PoopRusteek vs Claude Code — a free alternative without a subscription',
+      desc: 'How PoopRusteek compares with Anthropic’s Claude Code: price, models, MCP, skills, CLAUDE.md support — and when Claude Code is still the better pick.',
+      crumb: 'vs Claude Code',
+    },
+    vsCodex: {
+      title: 'PoopRusteek vs OpenAI Codex CLI — terminal coding agents compared',
+      desc: 'Codex CLI and PoopRusteek side by side: both Rust, both in the terminal. Accounts and usage limits, models, AGENTS.md, extras — and which one to choose.',
+      crumb: 'vs Codex CLI',
+    },
+    vsGeminiCli: {
+      title: 'PoopRusteek vs Gemini CLI — free AI coding agents compared',
+      desc: 'Gemini CLI’s free tier and PoopRusteek’s DeepSeek web session compared: limits, models, GEMINI.md, tools, install — and where each one wins.',
+      crumb: 'vs Gemini CLI',
     },
     rag: {
-      title: 'Local RAG — PoopRusteek 🧻',
-      desc: 'How the offline semantic layer works: e5-small embeddings, stemmed keyword search and rank fusion over skills, MCP tools and conversation history.',
+      title: 'Offline RAG in a terminal coding agent — PoopRusteek',
+      desc: 'How PoopRusteek finds its own skills, MCP tools and past solutions offline: e5-small embeddings, stemmed keyword search and rank fusion on your CPU.',
+      crumb: 'Local RAG',
     },
     serve: {
-      title: 'Local API server — PoopRusteek 🧻',
-      desc: '/serve turns the agent into an OpenAI-compatible gateway on 127.0.0.1 — model routing, clients, endpoints and the defaults that keep it local.',
+      title: 'Free OpenAI-compatible API on localhost — PoopRusteek /serve',
+      desc: '/serve turns the agent into an OpenAI-compatible gateway on 127.0.0.1 for aider, Continue, Open WebUI and the OpenAI SDKs — model routing, endpoints, defaults.',
+      crumb: 'API server',
     },
     architecture: {
-      title: 'Architecture — PoopRusteek 🧻',
-      desc: 'One tokio::select! loop, an agent in a spawned task, scoped tool approvals, edit checkpoints, and the numbers behind the claims.',
+      title: 'How PoopRusteek is built — Rust, tokio and ratatui',
+      desc: 'One tokio::select! loop, an agent in a spawned task, scoped tool approvals, edit checkpoints and the numbers behind the claims — the design of a Rust coding agent.',
+      crumb: 'Architecture',
     },
+    faq: {
+      title: 'PoopRusteek FAQ — is it free, does it need an API key?',
+      desc: 'Answers about PoopRusteek: price, API keys, models, Windows/macOS/Linux support, privacy, the unofficial DeepSeek web API, and moving over from Claude Code or Codex.',
+      crumb: 'FAQ',
+    },
+  },
+
+  seo: {
+    keywords:
+      'claude code alternative, free claude code alternative, codex cli alternative, gemini cli alternative, ai coding agent, terminal coding assistant, deepseek coding agent, open source coding agent, rust tui, mcp',
+    llms: 'PoopRusteek is a free, open-source (MIT) AI coding agent for the terminal, written in Rust. By default it drives DeepSeek’s web chat — no API key and no subscription — and it also works with OpenAI-compatible, Anthropic and Gemini endpoints.',
+    llmsBody:
+      'It is an alternative to Anthropic Claude Code, OpenAI Codex CLI and Google Gemini CLI: parallel chats, sub-agents, an iterative GOAL loop with a separate evaluator, MCP with OAuth, markdown skills, offline RAG, file edits with checkpoints and /undo, and a local OpenAI-compatible API server. It reads CLAUDE.md, AGENTS.md and GEMINI.md project instructions. Installers: pooprusteek-setup.exe for Windows (x86_64, arm64), curl | sh for macOS on Apple Silicon and Linux (x86_64, arm64, glibc 2.39+). Caveat: the DeepSeek web API it uses is unofficial and can change without notice.',
+  },
+
+
+  switching: {
+    kicker: 'switching over',
+    title: 'Coming from Claude Code, Codex or Gemini CLI?',
+    sub: 'Same job — an agent in your terminal that reads code, runs commands and edits files — without the subscription. And your project setup comes with you.',
+    more: 'Compare every option',
+    cards: [
+      {
+        to: '/vs/claude-code',
+        name: 'Claude Code',
+        body: 'CLAUDE.md, .claude/skills and the MCP servers you set up for Claude Desktop or Claude CLI load as they are. No Pro or Max plan needed.',
+      },
+      {
+        to: '/vs/codex',
+        name: 'Codex CLI',
+        body: 'Also Rust, also in the terminal, also reads AGENTS.md. No ChatGPT plan limits to watch — and several providers behind one interface.',
+      },
+      {
+        to: '/vs/gemini-cli',
+        name: 'Gemini CLI',
+        body: 'GEMINI.md keeps working. Swap a daily request quota for a DeepSeek web session, and gain parallel chats, sub-agents and a GOAL loop.',
+      },
+    ],
+  },
+
+  alt: {
+    title: 'Free alternatives to Claude Code and Codex',
+    lede: 'Six terminal coding agents, one table: what each one costs, what it runs on, and what licence it ships under. Then an honest answer to where PoopRusteek fits — and where it doesn’t.',
+    checked: 'Facts about other tools checked on 14 September 2026 against their official documentation and repositories. Plans and limits change; follow the links before you decide.',
+    table: {
+      kicker: 'at a glance',
+      title: 'Six agents, side by side',
+      lede: 'Every tool here reads your code, runs commands and edits files from a terminal. The differences are in the bill, the models and the licence.',
+      cols: { tool: 'tool', licence: 'licence', cost: 'what you pay / need', models: 'models', runs: 'where it runs' },
+      rows: [
+        {
+          tool: 'PoopRusteek',
+          licence: 'MIT',
+          cost: 'Nothing: a free chat.deepseek.com session, no API key',
+          models: 'DeepSeek web; plus OpenAI-compatible, Anthropic and Gemini endpoints',
+          runs: 'Terminal — Windows, macOS (Apple Silicon), Linux',
+        },
+        {
+          tool: 'Claude Code',
+          licence: 'Proprietary',
+          cost: 'Claude Pro ($20/mo), Max (from $100/mo), Team, Enterprise, or Anthropic API usage. Not in the Free plan',
+          models: 'Claude; third-party providers in the CLI and IDE plugins',
+          runs: 'Terminal, VS Code, JetBrains, desktop app, web',
+        },
+        {
+          tool: 'Codex CLI',
+          licence: 'Apache-2.0',
+          cost: 'A ChatGPT plan (Free through Enterprise, within its usage limits) or OpenAI API billing',
+          models: 'OpenAI',
+          runs: 'Terminal — macOS, Linux, Windows',
+        },
+        {
+          tool: 'Gemini CLI',
+          licence: 'Apache-2.0',
+          cost: 'Free with a Google account: 60 requests/min, 1,000/day. Paid via Gemini API key or Vertex AI',
+          models: 'Gemini, 1M-token context',
+          runs: 'Terminal (Node.js)',
+        },
+        {
+          tool: 'aider',
+          licence: 'Apache-2.0',
+          cost: 'The tool is free; you pay whichever model provider you connect, or run local models',
+          models: 'Almost any LLM, including local ones',
+          runs: 'Terminal (Python)',
+        },
+        {
+          tool: 'OpenCode',
+          licence: 'MIT',
+          cost: 'The tool is free; bring your own provider and API key, or local models',
+          models: 'Many providers, including local ones',
+          runs: 'Terminal TUI',
+        },
+      ],
+    },
+    fit: {
+      kicker: 'where it fits',
+      title: 'Choose PoopRusteek if…',
+      lede: 'No tool wins every column. This is the honest version.',
+      yesTitle: 'it’s a good fit when',
+      yes: [
+        'you want an agentic workflow without a subscription or an API bill',
+        'you want to try working with an agent before paying for one',
+        'you want parallel chats, sub-agents and a GOAL loop that iterates until an evaluator agrees',
+        'you want one interface over several providers, or a free OpenAI-compatible endpoint on localhost',
+        'your project already has CLAUDE.md, AGENTS.md or GEMINI.md and you want it to keep working',
+      ],
+      noTitle: 'look elsewhere when',
+      no: [
+        'you need the strongest frontier model on large, hard codebases — that’s what a Claude or ChatGPT plan buys',
+        'your team needs vendor support, admin controls or compliance guarantees',
+        'your policy rules out unofficial APIs — PoopRusteek’s default DeepSeek backend is one',
+        'you’re on an Intel Mac, which has no build',
+      ],
+    },
+    deep: {
+      kicker: 'in depth',
+      title: 'Head-to-head comparisons',
+      read: 'Read the comparison',
+    },
+    cta: {
+      title: 'Try it in two minutes',
+      body: 'One installer on Windows, one line on macOS and Linux. If it isn’t for you, the uninstaller asks whether to take your data with it.',
+    },
+  },
+
+  vs: {
+    common: {
+      tldr: 'the short version',
+      table: 'side by side',
+      feature: 'feature',
+      same: 'what carries over',
+      diff: 'what’s different',
+      choose: 'which one',
+      pickUs: 'pick PoopRusteek if',
+      pickThem: 'pick {{name}} if',
+      switch: 'switching',
+      sameTitle: 'Your setup comes with you',
+      diffTitle: 'Where they part ways',
+      chooseTitle: 'Which one should you use?',
+      switchTitle: 'Moving over in three steps',
+      sources: 'Sources',
+      disclaimer:
+        '{{name}} is a product of {{vendor}}. PoopRusteek is an independent open-source project, not affiliated with or endorsed by {{vendor}}. Facts about {{name}} were checked on 14 September 2026.',
+    },
+    claudeCode: {
+      name: 'Claude Code',
+      vendor: 'Anthropic',
+      title: 'PoopRusteek vs Claude Code',
+      lede: 'Claude Code is Anthropic’s agentic coding tool. PoopRusteek is a free, open-source terminal agent in Rust. Here’s what’s the same, what isn’t, and when each one is the right call.',
+      tldr: [
+        'Claude Code needs a paid Claude plan (Pro from $20 a month) or Anthropic API credits. PoopRusteek runs on a free DeepSeek web session with no key.',
+        'Claude Code runs Claude, from the company that trains it. PoopRusteek defaults to DeepSeek and can add OpenAI-compatible, Anthropic or Gemini endpoints.',
+        'Your CLAUDE.md, .claude/skills and the MCP servers configured for Claude Desktop or Claude CLI are picked up by PoopRusteek as they are.',
+      ],
+      rows: [
+        { k: 'Price', us: '$0 — a free DeepSeek web session', them: 'Pro $20/mo, Max from $100/mo, Team, Enterprise, or API usage; not in the Free plan' },
+        { k: 'Licence', us: 'MIT, open source', them: 'Proprietary (Anthropic Commercial Terms)' },
+        { k: 'Models', us: 'DeepSeek by default; OpenAI-compatible, Anthropic, Gemini via /providers', them: 'Claude; third-party providers in the CLI, VS Code and JetBrains' },
+        { k: 'Where it runs', us: 'Terminal on Windows, macOS (Apple Silicon), Linux', them: 'Terminal, VS Code, JetBrains, desktop app, web' },
+        { k: 'Project instructions', us: 'CLAUDE.md, AGENTS.md, GEMINI.md, POOPRUSTEEK.md', them: 'CLAUDE.md' },
+        { k: 'Skills', us: 'SKILL.md from .claude/skills and a dozen other agent folders', them: 'Skills' },
+        { k: 'Parallel work', us: 'Parallel chats, sub-agents, /btw side questions', them: 'Sub-agents and background agents' },
+        { k: 'Install', us: 'Windows installer; curl | sh on macOS and Linux', them: 'curl | bash, PowerShell, Homebrew, WinGet, apt/dnf/apk' },
+      ],
+      same: [
+        'An agent loop that reads code, runs shell commands, edits files and asks before anything with side effects',
+        'Slash commands, CLAUDE.md project instructions and markdown skills in .claude/skills',
+        'MCP servers — PoopRusteek even discovers the ones you configured for Claude Desktop and Claude CLI',
+        'Sub-agents that take a task away and bring back only the answer',
+      ],
+      diff: [
+        { k: 'The bill', v: 'Claude Code is a paid product. PoopRusteek’s default backend costs nothing, because it drives the DeepSeek web chat that is free to use.' },
+        { k: 'The model', v: 'Claude Code talks to Claude; PoopRusteek talks to DeepSeek unless you add another provider. On long, difficult tasks the model matters more than the harness — that is the real reason to pay for Claude.' },
+        { k: 'The surfaces', v: 'Claude Code also lives in IDEs, a desktop app and the browser. PoopRusteek is a terminal program, plus a local OpenAI-compatible server and an ACP mode for editors.' },
+        { k: 'The extras', v: 'PoopRusteek adds a GOAL loop with a separate evaluator agent, offline RAG over skills, MCP tools and chat history, and ten colour themes.' },
+        { k: 'The fine print', v: 'DeepSeek’s web API is unofficial and can change without notice. Claude Code is a supported product with a vendor behind it.' },
+      ],
+      pickUs: [
+        'you don’t want a subscription or an API bill',
+        'you want to learn agentic workflows before paying for them',
+        'you want several models behind one interface',
+        'you live in the terminal anyway',
+      ],
+      pickThem: [
+        'you need Claude-level results on large, difficult codebases',
+        'your team needs vendor support, admin controls and compliance',
+        'you want the agent inside your IDE, a desktop app or the browser',
+        'your policies rule out unofficial APIs',
+      ],
+      steps: [
+        'Install PoopRusteek: one file on Windows, one line on macOS and Linux.',
+        'Start it in your project. CLAUDE.md and .claude/skills load automatically; MCP servers from your Claude Desktop and Claude CLI configs are discovered.',
+        'Paste your DeepSeek session token when onboarding asks — or add an Anthropic endpoint with /providers and your API key to keep using Claude models.',
+      ],
+      sources: [
+        { label: 'Claude Code overview', url: 'https://code.claude.com/docs/en/overview' },
+        { label: 'Claude pricing', url: 'https://claude.com/pricing' },
+        { label: 'Claude Code licence', url: 'https://github.com/anthropics/claude-code/blob/main/LICENSE.md' },
+      ],
+    },
+    codex: {
+      name: 'Codex CLI',
+      vendor: 'OpenAI',
+      title: 'PoopRusteek vs Codex CLI',
+      lede: 'OpenAI’s Codex CLI and PoopRusteek are closer than most pairs: both open source, both written in Rust, both terminal-first. The difference is what powers them and what you get around the loop.',
+      tldr: [
+        'Codex CLI (Apache-2.0) uses your ChatGPT plan — Free through Enterprise, within that plan’s usage limits — or OpenAI API billing. PoopRusteek uses a free DeepSeek web session.',
+        'Both are Rust programs in the terminal, both read AGENTS.md, both install with a one-line script.',
+        'Codex brings OpenAI’s models and first-party integration. PoopRusteek is multi-provider and adds a GOAL loop, offline RAG and a local OpenAI-compatible server.',
+      ],
+      rows: [
+        { k: 'Price', us: '$0 — a free DeepSeek web session', them: 'Included in ChatGPT plans within their usage limits, or OpenAI API billing' },
+        { k: 'Licence', us: 'MIT', them: 'Apache-2.0' },
+        { k: 'Written in', us: 'Rust', them: 'Rust' },
+        { k: 'Models', us: 'DeepSeek by default; OpenAI-compatible, Anthropic, Gemini via /providers', them: 'OpenAI' },
+        { k: 'Project instructions', us: 'AGENTS.md, CLAUDE.md, GEMINI.md, POOPRUSTEEK.md', them: 'AGENTS.md' },
+        { k: 'Platforms', us: 'Windows, macOS (Apple Silicon), Linux', them: 'macOS, Linux, Windows' },
+        { k: 'Install', us: 'Windows installer; curl | sh on macOS and Linux', them: 'curl | sh, PowerShell, npm, Homebrew, binaries' },
+      ],
+      same: [
+        'A Rust binary with a terminal interface and a one-line installer',
+        'AGENTS.md project instructions, read automatically',
+        'An agent that edits files and runs commands behind approvals',
+        'Open source you can read before you run it',
+      ],
+      diff: [
+        { k: 'The bill', v: 'Codex is included even in ChatGPT Free, but inside usage limits that paid plans raise; beyond them it is API billing. PoopRusteek’s default backend has no plan at all — its ceiling is whatever DeepSeek’s web chat allows.' },
+        { k: 'The model', v: 'Codex runs OpenAI’s models. PoopRusteek defaults to DeepSeek and can switch to any OpenAI-compatible, Anthropic or Gemini endpoint from a panel.' },
+        { k: 'The extras', v: 'PoopRusteek adds parallel chats, a GOAL loop with an evaluator agent, offline RAG over skills, tools and history, and /serve — a local OpenAI-compatible API.' },
+        { k: 'The fine print', v: 'DeepSeek’s web API is unofficial and can change without notice. Codex is OpenAI’s own supported tool.' },
+      ],
+      pickUs: [
+        'you don’t have — or don’t want to watch the limits of — a ChatGPT plan',
+        'you want to switch between providers without switching tools',
+        'you want an iterate-until-done GOAL loop or offline RAG',
+        'you want a free OpenAI-compatible endpoint for your other tools',
+      ],
+      pickThem: [
+        'you already pay for ChatGPT and want OpenAI’s models',
+        'you want first-party support from the model vendor',
+        'you need it on an Intel Mac',
+        'your policies rule out unofficial APIs',
+      ],
+      steps: [
+        'Install PoopRusteek: one file on Windows, one line on macOS and Linux.',
+        'Start it in your repository — AGENTS.md is picked up exactly as Codex reads it.',
+        'Paste your DeepSeek session token when onboarding asks, or add an OpenAI endpoint with /providers and your API key.',
+      ],
+      sources: [
+        { label: 'openai/codex on GitHub', url: 'https://github.com/openai/codex' },
+        { label: 'Codex pricing and plans', url: 'https://learn.chatgpt.com/docs/pricing' },
+        { label: 'AGENTS.md in Codex', url: 'https://github.com/openai/codex/blob/main/docs/agents_md.md' },
+      ],
+    },
+    geminiCli: {
+      name: 'Gemini CLI',
+      vendor: 'Google',
+      title: 'PoopRusteek vs Gemini CLI',
+      lede: 'Both are free to start and both live in the terminal. Gemini CLI brings Google’s models and a generous daily quota; PoopRusteek brings a different backend and a different set of tools around the loop.',
+      tldr: [
+        'Gemini CLI is free with a Google account — 60 requests a minute, 1,000 a day. PoopRusteek is free with a DeepSeek web session.',
+        'Gemini CLI (Apache-2.0) has a 1M-token context and Google Search grounding. PoopRusteek (MIT) has parallel chats, sub-agents, a GOAL loop and several providers.',
+        'PoopRusteek reads GEMINI.md, so your project instructions come along.',
+      ],
+      rows: [
+        { k: 'Price', us: '$0 — a free DeepSeek web session', them: 'Free with Google sign-in (60 req/min, 1,000/day); paid via API key or Vertex AI' },
+        { k: 'Licence', us: 'MIT', them: 'Apache-2.0' },
+        { k: 'Models', us: 'DeepSeek by default; OpenAI-compatible, Anthropic, Gemini via /providers', them: 'Gemini, 1M-token context' },
+        { k: 'Built-in tools', us: 'Shell and PTY, edit/write with /undo, sub-agents, todo, timers, MCP', them: 'File operations, shell, web fetch, Google Search grounding, MCP' },
+        { k: 'Project instructions', us: 'GEMINI.md, AGENTS.md, CLAUDE.md, POOPRUSTEEK.md', them: 'GEMINI.md' },
+        { k: 'Runtime', us: 'A single native binary', them: 'Node.js (npx, npm, Homebrew, MacPorts)' },
+      ],
+      same: [
+        'A free way to put an agent in your terminal',
+        'Context files — GEMINI.md keeps working',
+        'MCP servers for extra tools',
+        'Open source, readable before you run it',
+      ],
+      diff: [
+        { k: 'The quota', v: 'Gemini CLI’s free tier is a clear number: 60 requests a minute and 1,000 a day. PoopRusteek has no quota of its own; it is bound by what DeepSeek’s web chat allows, with /rate and /retry to stay polite.' },
+        { k: 'The model', v: 'Gemini brings a 1M-token context window and Search grounding. PoopRusteek defaults to DeepSeek and can add Gemini itself as a provider, next to OpenAI-compatible and Anthropic endpoints.' },
+        { k: 'The extras', v: 'PoopRusteek adds parallel chats, sub-agents, a GOAL loop with an evaluator, offline RAG, edit checkpoints with /undo and a local OpenAI-compatible API.' },
+        { k: 'The fine print', v: 'DeepSeek’s web API is unofficial and can change without notice. Gemini CLI is Google’s supported tool.' },
+      ],
+      pickUs: [
+        'you’ve hit the daily request quota',
+        'you want parallel chats, sub-agents or a GOAL loop',
+        'you want one tool over several providers — Gemini included',
+        'you prefer a single native binary to a Node.js install',
+      ],
+      pickThem: [
+        'you need a 1M-token context window',
+        'you want Google Search grounding built in',
+        'you are already on Google Cloud or Vertex AI',
+        'your policies rule out unofficial APIs',
+      ],
+      steps: [
+        'Install PoopRusteek: one file on Windows, one line on macOS and Linux.',
+        'Start it in your project — GEMINI.md loads automatically.',
+        'Paste your DeepSeek session token when onboarding asks, or add Gemini with /providers and your API key.',
+      ],
+      sources: [
+        { label: 'google-gemini/gemini-cli on GitHub', url: 'https://github.com/google-gemini/gemini-cli' },
+      ],
+    },
+  },
+
+  faq: {
+    title: 'Questions people ask before installing',
+    lede: 'Short, straight answers — including the ones that don’t flatter the project.',
+    items: [
+      {
+        q: 'Is PoopRusteek really free?',
+        a: 'Yes. The agent is MIT-licensed, and by default it uses your own chat.deepseek.com session, so there is no subscription and no API bill. If you connect a paid provider such as OpenAI, Anthropic or Gemini, that provider bills you as usual.',
+      },
+      {
+        q: 'Do I need an API key?',
+        a: 'Not for the default DeepSeek backend: during onboarding you paste a session token from the DeepSeek web app. API keys are only needed for extra providers you add with /providers.',
+      },
+      {
+        q: 'Is it a Claude Code alternative?',
+        a: 'It does the same job — an agent in your terminal that reads code, runs commands, edits files and uses MCP tools — and it reads the same CLAUDE.md files and .claude/skills folders. It does not use Anthropic’s models by default; to use Claude you add an Anthropic endpoint and pay for the API.',
+      },
+      {
+        q: 'How is it different from OpenAI Codex CLI?',
+        a: 'Codex CLI is open source (Apache-2.0) and runs on a ChatGPT plan or an OpenAI API key, within that plan’s usage limits. PoopRusteek runs on a DeepSeek web session by default, can switch between several providers, and adds a GOAL loop, offline RAG and a local OpenAI-compatible server. Both are written in Rust and both read AGENTS.md.',
+      },
+      {
+        q: 'Which models can it use?',
+        a: 'deepseek-chat and deepseek-reasoner through the built-in DeepSeek web client; any OpenAI-compatible endpoint (Ollama, LM Studio, vLLM, OpenRouter and others); the Anthropic Messages API; and Google Gemini.',
+      },
+      {
+        q: 'Does it work on Windows?',
+        a: 'Yes, natively. pooprusteek-setup.exe installs per user without admin rights and adds PATH and a Start-menu shortcut. Builds exist for Windows x86_64 and arm64.',
+      },
+      {
+        q: 'What about macOS and Linux?',
+        a: 'macOS on Apple Silicon, and Linux on x86_64 and arm64 with glibc 2.39 or newer (Ubuntu 24.04, Debian 13 and later), both with a one-line install script. There is no Intel Mac build, because ONNX Runtime ships no prebuilt library for it.',
+      },
+      {
+        q: 'Is it open source?',
+        a: 'Yes, under the MIT licence. The source, the release pipeline and the installers are all on GitHub.',
+      },
+      {
+        q: 'Where does my code go?',
+        a: 'To the model provider you use, and nowhere else. There is no telemetry and no account with the project; the RAG index and the embedding model stay on your disk.',
+      },
+      {
+        q: 'Is the DeepSeek web API official?',
+        a: 'No. PoopRusteek uses the reverse-engineered web API of chat.deepseek.com and solves its proof-of-work locally. It is unofficial, it can break when DeepSeek changes something, and you should check DeepSeek’s terms before relying on it for work.',
+      },
+      {
+        q: 'Will my Claude Code, Codex or Gemini CLI setup carry over?',
+        a: 'Mostly. Project instructions from CLAUDE.md, AGENTS.md and GEMINI.md load automatically, skills are discovered in .claude/skills and similar folders, and MCP servers are imported from Claude Desktop, Claude CLI, VS Code, Cursor and other configs.',
+      },
+      {
+        q: 'Can other tools use it as a backend?',
+        a: 'Yes. /serve starts a local OpenAI-compatible API on 127.0.0.1:7667 that aider, Continue, Open WebUI or the OpenAI SDKs can point at, and --acp runs PoopRusteek as an Agent Client Protocol server for editors.',
+      },
+      {
+        q: 'How does it update?',
+        a: '/update checks your channel — stable releases or the rolling dev build — verifies the download against the release manifest and swaps the binary in on the next launch. /autoupdate on runs the same check at startup.',
+      },
+    ],
+    more: 'Still wondering?',
+    moreBody: 'The source answers everything this page doesn’t — or open an issue.',
   },
 
   common: {
@@ -43,6 +434,7 @@ const en = {
   },
 
   hero: {
+    h1: 'A free Claude Code & Codex alternative for your terminal',
     pill: 'free forever — it talks to chat.deepseek.com, not to your wallet',
     tagline: 'Terminal coding agent · powered by DeepSeek web',
     desc: 'A free, terminal-native alternative to Claude Code — written in Rust. Parallel chats, background sub-agents, an iterative <goal>GOAL</goal> loop, an offline semantic layer over your skills, tools and history, and a local OpenAI-compatible server. No API key. No subscription. No fluff.',
@@ -782,6 +1174,8 @@ const en = {
     title: 'Your terminal. Your session. Your agent.',
     blurb: 'Yes, it’s really called PoopRusteek. The code is surgical anyway — go read it, or just install it.',
     cta: 'Download',
+    compare: 'Compare',
+    project: 'Project',
     tagline: 'PoopRusteek 🧻 · built with ratatui, tokio and questionable naming decisions',
   },
 }

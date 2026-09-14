@@ -19,7 +19,8 @@ export default function Logo({ className = '' }: { className?: string }) {
     colors.accent_soft,
   ]
   return (
-    <h1
+    <div
+      role="img"
       className={`font-bold tracking-[0.08em] whitespace-nowrap select-none ${className}`}
       aria-label="PoopRusteek"
     >
@@ -43,6 +44,6 @@ export default function Logo({ className = '' }: { className?: string }) {
           {ch}
         </motion.span>
       ))}
-    </h1>
+    </div>
   )
 }
