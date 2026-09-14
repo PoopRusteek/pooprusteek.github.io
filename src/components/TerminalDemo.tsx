@@ -14,21 +14,25 @@ const C = {
   err: 'text-err',
 }
 
-// A believable pooprusteek session: /goal armed, worker iterates,
-// evaluator signs off. Status labels are the real ones from the TUI.
+// A believable pooprusteek session: RAG indexes locally, /goal is armed,
+// the worker edits a file (checkpointed), the evaluator signs off. Status
+// labels, tool names and badges are the real ones from the TUI.
 const SCRIPT: Line[] = [
-  { segs: [{ t: '❯ ', c: C.ok }, { t: 'pooprusteek', c: C.softBlue }], typed: true, pause: 500 },
-  { segs: [{ t: '  POOPRUSTEEK', c: C.accent }], pause: 120 },
-  { segs: [{ t: '  Terminal coding agent · powered by DeepSeek web', c: C.dim }], pause: 600 },
-  { segs: [{ t: ' ' }], pause: 80 },
-  { segs: [{ t: '❯ ', c: C.ok }, { t: '/goal ', c: C.accent }, { t: 'make the failing tests pass', c: undefined }], typed: true, pause: 500 },
-  { segs: [{ t: '  [GOAL ON]', c: C.warn }, { t: ' worker + evaluator armed', c: C.dim }], pause: 700 },
-  { segs: [{ t: '  pooprusteek[deepseek-chat]', c: C.accent }, { t: ' cargo test — 2 failed', c: C.soft }], pause: 800 },
-  { segs: [{ t: '  ✗ parser::multiline — patching src/parser.rs', c: C.err }], pause: 900 },
-  { segs: [{ t: '  [GOAL iter#1]', c: C.warn }, { t: ' re-running suite…', c: C.dim }], pause: 900 },
-  { segs: [{ t: '  [EVALUATING]', c: C.softBlue }, { t: ' evaluator reviews the diff', c: C.dim }], pause: 1000 },
-  { segs: [{ t: '  ✓ 34 passed · 0 failed', c: C.ok }], pause: 500 },
-  { segs: [{ t: '  [GOAL DONE]', c: C.ok }, { t: ' · 4 231 tok · 38 t/s · $0.00', c: C.dim }], pause: 3800 },
+  { segs: [{ t: '❯ ', c: C.ok }, { t: 'pooprusteek', c: C.softBlue }], typed: true, pause: 420 },
+  { segs: [{ t: '  POOPRUSTEEK', c: C.accent }], pause: 110 },
+  { segs: [{ t: '  Terminal coding agent · powered by DeepSeek web', c: C.dim }], pause: 420 },
+  { segs: [{ t: '  [rag] ', c: C.softBlue }, { t: 'skills 14 · mcp tools 31 · history 4 210 chunks — local', c: C.dim }], pause: 700 },
+  { segs: [{ t: ' ' }], pause: 60 },
+  { segs: [{ t: '❯ ', c: C.ok }, { t: '/goal ', c: C.accent }, { t: 'make the failing tests pass', c: undefined }], typed: true, pause: 420 },
+  { segs: [{ t: '  [GOAL ON]', c: C.warn }, { t: ' worker + evaluator armed', c: C.dim }], pause: 620 },
+  { segs: [{ t: '  ~ skill match', c: C.softBlue }, { t: ' rust-testing (0.91) — loaded, +0 tokens idle', c: C.dim }], pause: 780 },
+  { segs: [{ t: '  pooprusteek[deepseek-chat]', c: C.accent }, { t: ' bash · cargo test — 2 failed', c: C.soft }], pause: 720 },
+  { segs: [{ t: '  ✗ parser::multiline', c: C.err }, { t: ' → edit src/parser.rs  ', c: C.soft }, { t: '+12 ', c: C.ok }, { t: '-4', c: C.err }], pause: 700 },
+  { segs: [{ t: '  ⧉ checkpoint saved', c: C.dim }, { t: ' — /undo brings the file back', c: C.dim }], pause: 700 },
+  { segs: [{ t: '  [GOAL iter#1]', c: C.warn }, { t: ' re-running suite…', c: C.dim }], pause: 760 },
+  { segs: [{ t: '  [EVALUATING]', c: C.softBlue }, { t: ' evaluator reviews the diff', c: C.dim }], pause: 860 },
+  { segs: [{ t: '  ✓ 34 passed · 0 failed', c: C.ok }], pause: 460 },
+  { segs: [{ t: '  [GOAL DONE]', c: C.ok }, { t: ' · 4 231 tok · 38 t/s · $0.00', c: C.dim }], pause: 3600 },
 ]
 
 const TYPE_MS = 46
@@ -109,7 +113,7 @@ export default function TerminalDemo() {
           PoopRusteek 🧻 — ~/dev/that-one-project
         </span>
       </div>
-      <div className="h-76 overflow-hidden p-4 text-left text-[11px] leading-5 sm:h-84 sm:text-sm sm:leading-6">
+      <div className="h-[23rem] overflow-hidden p-4 text-left text-[11px] leading-5 sm:h-[25rem] sm:text-sm sm:leading-6">
         {visible.map(renderLine)}
       </div>
       <div className="relative flex items-center justify-between gap-2 border-t border-line bg-panel px-4 py-1.5 text-[11px] text-dim">

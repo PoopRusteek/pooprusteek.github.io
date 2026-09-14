@@ -5,11 +5,14 @@ import {
   useReducedMotion,
   useScroll,
 } from 'motion/react'
+import { useRelease } from '../lib/use-release'
+import { versionLabel } from '../lib/release'
 
 // The TUI keeps its status bar at the bottom — so does the landing.
 // Scroll progress doubles as a fake context meter.
 export default function StatusBar() {
   const { scrollYProgress } = useScroll()
+  const { recommended } = useRelease()
   const [pct, setPct] = useState(0)
   useMotionValueEvent(scrollYProgress, 'change', (v) =>
     setPct(Math.round(v * 100)),
@@ -27,7 +30,7 @@ export default function StatusBar() {
           <span className="hidden sm:inline">
             {' '}
             <span className="text-warn">[GOAL:ship-landing]</span> mcp:2/3
-            agents:1 chats:3
+            agents:1 chats:3 · {versionLabel(recommended)}
           </span>
         </span>
         <span className="shrink-0">

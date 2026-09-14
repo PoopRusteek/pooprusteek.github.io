@@ -1,33 +1,38 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/jetbrains-mono';
 
-/* Palette lifted verbatim from pooprusteek/src/tui/theme.rs */
+/* Palette lifted verbatim from pooprusteek/src/tui/theme.rs — the `default`
+   preset (Midnight). At runtime lib/theme-store.ts overwrites these same
+   variables on :root with any other preset from the agent's /themes
+   gallery, so every utility below follows the switch. */
 @theme {
   --font-mono:
     'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas,
     monospace;
   --font-sans: var(--font-mono);
 
-  --color-ink: #0b0e19; /* THEME.bg          */
-  --color-panel: #111727; /* THEME.panel       */
-  --color-panel-deep: #0f1524; /* THEME.input_bg    */
-  --color-fg: #e2e8f0; /* THEME.fg          */
-  --color-accent: #60a5fa; /* THEME.accent      */
-  --color-accent-dim: #3b82f6; /* THEME.accent_dim  */
-  --color-accent-soft: #7dd3fc; /* THEME.accent_soft */
-  --color-line: #2a3854; /* THEME.border      */
-  --color-dim: #7888a4; /* THEME.text_dim    */
-  --color-soft: #94a3b8; /* THEME.text_soft   */
-  --color-err: #f38ba8; /* THEME.error       */
-  --color-ok: #a6e3a1; /* THEME.success     */
-  --color-warn: #f9e2af; /* THEME.warning     */
-  --color-sel: #222d48; /* THEME.selection   */
-  --color-user-msg: #1c2740; /* THEME.user_msg_bg */
-  --color-tool-msg: #262032; /* THEME.tool_msg_bg */
+  --color-ink: #0b0e19; /* THEME.bg           */
+  --color-panel: #111727; /* THEME.panel        */
+  --color-panel-deep: #0f1524; /* THEME.input_bg     */
+  --color-fg: #e2e8f0; /* THEME.fg           */
+  --color-accent: #60a5fa; /* THEME.accent       */
+  --color-accent-dim: #3b82f6; /* THEME.accent_dim   */
+  --color-accent-soft: #7dd3fc; /* THEME.accent_soft  */
+  --color-focus: #60a5fa; /* THEME.border_focus */
+  --color-line: #2a3854; /* THEME.border       */
+  --color-dim: #7888a4; /* THEME.text_dim     */
+  --color-soft: #94a3b8; /* THEME.text_soft    */
+  --color-err: #f38ba8; /* THEME.error        */
+  --color-ok: #a6e3a1; /* THEME.success      */
+  --color-warn: #f9e2af; /* THEME.warning      */
+  --color-sel: #222d48; /* THEME.selection    */
+  --color-user-msg: #1c2740; /* THEME.user_msg_bg  */
+  --color-tool-msg: #26203a; /* THEME.tool_msg_bg  */
 
   --animate-blink: blink 1.06s step-end infinite;
   --animate-marquee: marquee 42s linear infinite;
   --animate-marquee-rev: marquee-rev 36s linear infinite;
+  --animate-sweep: sweep 2.6s ease-in-out infinite;
 
   @keyframes blink {
     0%,
@@ -54,10 +59,39 @@
       transform: translateX(0);
     }
   }
+  /* a token travelling down a wire — used by the RAG and serve diagrams */
+  @keyframes sweep {
+    0% {
+      opacity: 0;
+      transform: translateX(0);
+    }
+    12% {
+      opacity: 1;
+    }
+    88% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(var(--sweep-distance, 100%));
+    }
+  }
+}
+
+/* CRT overlay tints, recomputed per theme by lib/themes.ts::applyTheme.
+   Declared here so the very first paint has them. */
+:root {
+  --crt-scan: rgba(8, 10, 18, 0.22);
+  --crt-vignette: rgba(4, 6, 12, 0.55);
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+/* the nav is fixed — anchored sections must not open underneath it */
+:where(section, header, div)[id] {
+  scroll-margin-top: 5rem;
 }
 
 body {
@@ -70,6 +104,11 @@ body {
 ::selection {
   background: var(--color-sel);
   color: var(--color-accent-soft);
+}
+
+:focus-visible {
+  outline: 1px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 /* Scrollbar in TUI colors — square, no rounding, like a terminal gutter */
@@ -110,7 +149,7 @@ body {
     to bottom,
     transparent 0px,
     transparent 2px,
-    rgba(8, 10, 18, 0.22) 3px,
+    var(--crt-scan) 3px,
     transparent 4px
   );
 }
@@ -123,15 +162,22 @@ body {
   background: radial-gradient(
     ellipse 120% 90% at 50% 40%,
     transparent 55%,
-    rgba(4, 6, 12, 0.55) 100%
+    var(--crt-vignette) 100%
   );
 }
 
 /* Faint phosphor grid behind panels */
 .grid-bg {
   background-image:
-    linear-gradient(rgba(42, 56, 84, 0.16) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(42, 56, 84, 0.16) 1px, transparent 1px);
+    linear-gradient(
+      color-mix(in srgb, var(--color-line) 45%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-line) 45%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 32px 32px;
 }
 
@@ -140,7 +186,8 @@ body {
     scroll-behavior: auto;
   }
   .animate-marquee,
-  .animate-marquee-rev {
+  .animate-marquee-rev,
+  .animate-sweep {
     animation: none;
   }
 }

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { rise, stagger, viewportOnce } from '../lib/anim'
 
 // Labels live in src/i18n/locales/* (tech.stats), one entry per number.
-const NUMBERS = ['1', '~15k', '0', '3']
+const NUMBERS = ['1', '62k', '0', '5']
 
 export default function TechStrip() {
   const { t } = useTranslation()

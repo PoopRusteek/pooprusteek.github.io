@@ -1,18 +1,25 @@
 import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
+import Corners from './ui/Corners'
+import SectionTitle from './ui/SectionTitle'
 import { rise, stagger, viewportOnce } from '../lib/anim'
 
-// Real TUI slash commands — verbatim in every language. Titles/bodies live
-// in src/i18n/locales/* (features.cards), one entry per cmd, same order.
+// Real TUI slash commands and tool names — verbatim in every language.
+// Titles/bodies live in src/i18n/locales/* (features.cards), one entry per
+// line below, same order.
 const CMDS = [
   '/new · /chats',
-  '/agent',
+  '/agent · task',
   '/goal',
+  '/rag · /search',
   '/mcp',
   '/skills',
   '/providers · /models',
-  'bash · powershell',
-  '/rate · /retry',
+  '/serve',
+  'edit · write · /undo',
+  'bash · /jobs · /ps',
+  '/whitelist',
+  '/update · /themes',
 ]
 
 export default function Features() {
@@ -38,10 +45,10 @@ export default function Features() {
               key={cmd}
               variants={rise}
               whileHover={{ y: -6 }}
-              className="group relative flex flex-col border border-line bg-panel p-5 transition-colors hover:border-accent"
+              className="group relative flex min-w-0 flex-col border border-line bg-panel p-5 transition-colors hover:border-accent"
             >
-              <CornerGlyphs />
-              <p className="text-xs text-accent">{cmd}</p>
+              <Corners />
+              <p className="truncate text-xs text-accent">{cmd}</p>
               <h3 className="mt-2 text-base font-bold text-fg">
                 {cards[i].title}
               </h3>
@@ -53,45 +60,5 @@ export default function Features() {
         </motion.div>
       </div>
     </section>
-  )
-}
-
-/* box-drawing corners that light up on hover — the ratatui border wink */
-function CornerGlyphs() {
-  const base =
-    'pointer-events-none absolute text-line transition-colors group-hover:text-accent-soft text-xs leading-none'
-  return (
-    <>
-      <span aria-hidden className={`${base} top-1 left-1`}>┌</span>
-      <span aria-hidden className={`${base} top-1 right-1`}>┐</span>
-      <span aria-hidden className={`${base} bottom-1 left-1`}>└</span>
-      <span aria-hidden className={`${base} bottom-1 right-1`}>┘</span>
-    </>
-  )
-}
-
-export function SectionTitle({
-  kicker,
-  title,
-  sub,
-}: {
-  kicker: string
-  title: string
-  sub?: string
-}) {
-  return (
-    <motion.div
-      variants={rise}
-      initial="hidden"
-      whileInView="show"
-      viewport={viewportOnce}
-      className="max-w-3xl"
-    >
-      <p className="text-xs tracking-[0.3em] text-dim uppercase">
-        <span className="text-accent">──</span> {kicker}
-      </p>
-      <h2 className="mt-3 text-2xl font-bold text-fg sm:text-4xl">{title}</h2>
-      {sub && <p className="mt-4 text-sm leading-7 text-soft">{sub}</p>}
-    </motion.div>
   )
 }

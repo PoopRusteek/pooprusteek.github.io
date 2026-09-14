@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
-import { SectionTitle } from './Features'
+import { useTheme } from '../lib/theme-store'
+import SectionTitle from './ui/SectionTitle'
 
 // The real status labels the TUI cycles through in GOAL mode — verbatim in
 // every language. The explanatory log lines live in src/i18n/locales/*
@@ -18,6 +19,7 @@ const STATES = [
 
 export default function GoalLoop() {
   const { t } = useTranslation()
+  const { colors } = useTheme()
   const logs = t('goal.logs', { returnObjects: true })
   const reduced = useReducedMotion()
   const [i, setI] = useState(reduced ? STATES.length - 1 : 0)
@@ -34,7 +36,7 @@ export default function GoalLoop() {
   const s = STATES[i]
 
   return (
-    <section id="goal" className="border-y border-line bg-panel/40 px-4 py-24">
+    <section id="goal" className="px-4 py-24">
       <div className="mx-auto max-w-5xl">
         <SectionTitle
           kicker={t('goal.kicker')}
@@ -78,7 +80,7 @@ export default function GoalLoop() {
               <motion.span
                 key={d}
                 animate={{
-                  backgroundColor: d === i ? '#60A5FA' : '#2A3854',
+                  backgroundColor: d === i ? colors.accent : colors.border,
                   scale: d === i ? 1.3 : 1,
                 }}
                 transition={{ duration: 0.25 }}

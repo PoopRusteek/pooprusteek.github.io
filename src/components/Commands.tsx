@@ -1,14 +1,22 @@
 import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { rise, viewportOnce } from '../lib/anim'
+import Link from './ui/Link'
 
+// Every slash command the TUI registers (src/commands/mod.rs
+// ::register_defaults), split into two counter-scrolling rows.
 const ROW_A = [
-  '/new', '/chats', '/btw', '/agent', '/agents', '/goal', '/mcp', '/skills',
-  '/tools', '/whitelist', '/jobs', '/ps', '/attach', '/compact',
+  '/new', '/chats', '/btw', '/agent', '/agents', '/goal', '/timers', '/jobs',
+  '/ps', '/attach', '/compact', '/undo', '/search', '/rag', '/tools',
+  '/whitelist', '/skills', '/mcp', '/instructions', '/themes', '/serve',
+  '/server', '/update', '/autoupdate', '/help',
 ]
 const ROW_B = [
-  '/providers', '/models', '/rate', '/retry', '/sessions', '/load', '/export',
-  '/import', '/cwd', '/last', '/debug', '/wipe', '/logout', '/quit',
+  '/providers', '/models', '/rate', '/retry', '/sessions', '/session',
+  '/load', '/last', '/export', '/import', '/cwd', '/delete', '/delete-local',
+  '/reset', '/clear', '/home', '/debug', '/logout', '/wipe', '/version',
+  '/rag-limit', '/refetch-providers', '/cache-providers', '/default-compact',
+  '/quit',
 ]
 
 export default function Commands() {
@@ -39,6 +47,13 @@ export default function Commands() {
         <MarqueeRow items={ROW_A} className="animate-marquee" />
         <MarqueeRow items={ROW_B} className="animate-marquee-rev" />
       </div>
+
+      <p className="mx-auto mt-12 max-w-3xl px-4 text-center text-xs text-dim">
+        {t('commands.tail')}{' '}
+        <Link to="/architecture" className="text-accent-soft hover:text-accent">
+          /architecture →
+        </Link>
+      </p>
     </section>
   )
 }

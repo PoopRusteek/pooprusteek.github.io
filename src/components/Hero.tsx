@@ -1,11 +1,8 @@
-import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Trans, useTranslation } from 'react-i18next'
 import Logo from './Logo'
 import TerminalDemo from './TerminalDemo'
-import { GITHUB_URL } from '../lib/anim'
-
-const INSTALL_CMD = 'git clone https://github.com/Aver005/pooprusteek && cargo run'
+import DownloadCTA from './DownloadCTA'
 
 export default function Hero() {
   const { t } = useTranslation()
@@ -54,50 +51,13 @@ export default function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.35 }}
-          className="mt-10 mb-16 flex w-full max-w-2xl flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center"
+          className="mt-10 mb-16 flex w-full justify-center"
         >
-          <CopyCommand />
-          <motion.a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            className="shrink-0 rounded-md border border-accent bg-accent/10 px-6 py-3 text-center text-sm font-bold text-accent-soft transition-colors hover:bg-accent/20"
-          >
-            ★ GitHub
-          </motion.a>
+          <DownloadCTA />
         </motion.div>
 
         <TerminalDemo />
       </div>
     </header>
-  )
-}
-
-function CopyCommand() {
-  const { t } = useTranslation()
-  const [copied, setCopied] = useState(false)
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(INSTALL_CMD)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1800)
-    } catch {
-      /* clipboard unavailable — leave the button as-is */
-    }
-  }
-  return (
-    <button
-      onClick={copy}
-      className="group flex min-w-0 items-center gap-3 overflow-hidden rounded-md border border-line bg-panel-deep px-4 py-3 text-left text-xs text-soft transition-colors hover:border-accent sm:text-sm"
-      title={t('hero.copyTitle')}
-    >
-      <span className="shrink-0 text-ok">❯</span>
-      <span className="truncate">git clone Aver005/pooprusteek && cargo run</span>
-      <span className="ml-auto shrink-0 text-dim transition-colors group-hover:text-accent-soft">
-        {copied ? <span className="text-ok">{t('hero.copied')}</span> : '⧉'}
-      </span>
-    </button>
   )
 }

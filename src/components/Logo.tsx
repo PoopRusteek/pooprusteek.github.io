@@ -1,13 +1,23 @@
 import { motion } from 'motion/react'
+import { useTheme } from '../lib/theme-store'
 
 // Replicates the TUI landing logo: every letter of POOPRUSTEEK pulses
 // through accent_soft → accent → success in a staggered wave; the first,
 // middle and last letters are additionally underlined (see tui/landing.rs).
+// The three colors come from the active preset, so the wave is whatever the
+// chosen theme would show in the terminal.
 const WORD = 'POOPRUSTEEK'
-const WAVE = ['#7DD3FC', '#60A5FA', '#A6E3A1', '#60A5FA', '#7DD3FC']
 const UNDERLINED = new Set([0, Math.floor(WORD.length / 2), WORD.length - 1])
 
 export default function Logo({ className = '' }: { className?: string }) {
+  const { colors } = useTheme()
+  const wave = [
+    colors.accent_soft,
+    colors.accent,
+    colors.success,
+    colors.accent,
+    colors.accent_soft,
+  ]
   return (
     <h1
       className={`font-bold tracking-[0.08em] whitespace-nowrap select-none ${className}`}
@@ -22,7 +32,7 @@ export default function Logo({ className = '' }: { className?: string }) {
               ? 'underline decoration-2 underline-offset-8'
               : undefined
           }
-          animate={{ color: WAVE }}
+          animate={{ color: wave }}
           transition={{
             duration: 2.4,
             repeat: Infinity,

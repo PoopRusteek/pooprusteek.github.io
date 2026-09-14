@@ -2,7 +2,7 @@
 
 # 🧻 pooprusteek-landing
 
-**The landing page for [PoopRusteek](https://github.com/Aver005/pooprusteek) —
+**The website for [PoopRusteek](https://github.com/Aver005/pooprusteek) —
 a free, terminal-native Rust coding agent with an unapologetic name.**
 
 *Terminal coding agent · powered by DeepSeek web · $0.00/month forever*
@@ -22,24 +22,37 @@ a free, terminal-native Rust coding agent with an unapologetic name.**
 
 ---
 
-## What is this
+## What this is
 
-A single-page, fully animated landing that sells PoopRusteek the way it deserves:
-**as a TUI**. The palette is lifted *verbatim* from the agent's
-`src/tui/theme.rs`, the hero logo replays the TUI's staggered letter-pulse
-animation, the whole page sits under a CRT scanline overlay, and the bottom of
-the screen is a working replica of the real status bar — scroll progress is
-reported as `ctx:N%` next to a spinning `| / - \`.
+A five-page site that sells PoopRusteek the way it deserves: **as a TUI**.
+The palette is lifted verbatim from the agent's `src/tui/theme.rs`, the hero
+logo replays the TUI's staggered letter-pulse, the whole page sits under a
+CRT scanline overlay, and the bottom of the screen is a working replica of
+the real status bar.
 
-| Section | What it does |
+Two things it does that a static landing usually doesn't:
+
+- **It hands you the build.** The download buttons are wired to the GitHub
+  release API — real file names, real sizes, real SHA-256 digests, and the
+  install command that works *today* (including the channel flag, while the
+  tagged stable release still predates the installers).
+- **It wears the agent's themes.** The gallery is the real preset table from
+  `theme.rs`; picking one rewrites the CSS custom properties the entire site
+  is built on, CRT tint included.
+
+## Pages
+
+| Route | What's on it |
 |---|---|
-| **Hero** | Letter-pulse logo, typewriter terminal running a real `/goal` session that ends in `[GOAL DONE] · $0.00` |
-| **`/free`** | `$0.00` in 9xl, a ledger of *why* it's free (cookie auth, local SHA-3 PoW), and a live nonce ticker |
-| **`/features`** | 8 capability cards with ratatui-style `┌ ┐ └ ┘` corners that light up on hover |
-| **`/goal`** | Auto-cycling replica of the real GOAL-mode status badges: `[GOAL ON] → [GOAL iter#1] → [EVALUATING] → [GOAL DONE]` |
-| **`/commands`** | Two counter-scrolling marquees of 28 real slash commands |
-| **Tech strip** | `1` binary · `~15k` lines of Rust · `0` GC pauses · `3` platforms |
-| **Status bar** | Fixed bottom bar: `deepseek · deepseek-chat [GOAL:ship-landing] mcp:2/3 …` |
+| `/` | Hero with an OS-aware download action, install tabs, `$0.00` ledger, 12 capability cards, the RAG and `/serve` teasers, the GOAL loop, the command marquee, the theme gallery |
+| `/download` | Release badge (channel · version · date · live-or-cached), install tabs, every asset in the release with sizes and digests, channel switch, verification, self-update, first launch, requirements, uninstall |
+| `/rag` | The offline retrieval layer: dense + lexical + RRF, three corpora, deferred MCP schemas, `/search`, every knob, and what happens when a piece is missing |
+| `/serve` | The agent as a local OpenAI-compatible gateway: starting it, model-id routing, clients, and the defaults that keep it on loopback |
+| `/architecture` | One `tokio::select!` loop, a turn end to end, the module map, the safety rails, and the evidence behind the numbers |
+
+Routing is ~60 lines of `useSyncExternalStore` over the History API
+(`src/lib/route-store.ts`). Deep links work because the host falls back to
+`index.html` for extensionless paths under the slug.
 
 ## Quick start
 
@@ -57,31 +70,58 @@ bun dev        # http://localhost:5173/pooprusteek/
 | `bun run preview` | Serve `dist/` at `http://localhost:4173/pooprusteek/` |
 | `bun run lint` | oxlint |
 
-## Deploy
-
-The site is hosted by **aaaver-app** (`E:\Projects\Me\aaaver-app`), a Bun
-server that maps `sites/<slug>/` → `https://aaaver.ru/<slug>/`.
+## How the download buttons decide what to offer
 
 ```
-bun run build                 dist/ with base=/pooprusteek/
+GET /repos/Aver005/pooprusteek/releases     (once per visit, cached 30 min)
+        │
+        ├─ stable = newest non-prerelease        ── shown on /download
+        ├─ dev    = the rolling `dev` tag        ── shown on /download
+        │
+        └─ recommended = the newest release that actually carries
+                         pooprusteek-setup.exe, install.sh and every
+                         platform binary  →  every button and command
+                                             on the site points here
+```
+
+If GitHub doesn't answer (rate limit, offline, blocked), a static fallback
+built from the rolling `dev` tag renders instead — the links still work, only
+the sizes and the date go missing. `src/lib/install.ts` then spells the
+matching command: while `recommended` is the dev build, the one-liner carries
+`-s -- --channel dev`, because `install.sh` on the stable channel reads
+`releases/latest/download/manifest.json` and that only exists once a stable
+release ships the full asset set.
+
+## Deploy
+
+The site is hosted by **aaaver-app**, a Bun server that maps
+`sites/<slug>/` → `https://aaaver.ru/<slug>/`.
+
+```
+push to develop
       │
       ▼
-deploy-site.bat pooprusteek E:\Projects\Me\pooprusteek-landing\dist
-      │                       scp → temp dir → atomic rename
+.github/workflows/demo.yml → aaaver-app/site-release.yml
+      │            builds dist/ and publishes the `latest` release
+      ▼            with dist.tar.gz
+sites-updater (on the VDS, polls every 10 min)
+      │            downloads, unpacks, atomic rename
       ▼
 https://aaaver.ru/pooprusteek/        live, zero downtime, no restart
 ```
 
-The one rule that everything hangs on: **`base: '/pooprusteek/'` in
-`vite.config.ts` must equal the slug**. Change one, change both.
+The one rule everything hangs on: **`base: '/pooprusteek/'` in
+`vite.config.ts` must equal the slug**. Change one, change both — the router
+strips that same base off the path.
 
 ## Design system
 
 Colors are not designed here — they are **imported truth** from
-`pooprusteek/src/tui/theme.rs` and declared as Tailwind tokens in
-`src/index.css` (`@theme`):
+`pooprusteek/src/tui/theme.rs`. The `default` preset is declared as Tailwind
+tokens in `src/index.css` (`@theme`); all ten presets live in
+`src/lib/themes.ts` and any of them can be written onto `:root` at runtime.
 
-| Token | Hex | TUI origin |
+| Token | Midnight | TUI origin |
 |---|---|---|
 | `ink` | `#0B0E19` | `THEME.bg` |
 | `panel` / `panel-deep` | `#111727` / `#0F1524` | `THEME.panel` / `THEME.input_bg` |
@@ -90,34 +130,43 @@ Colors are not designed here — they are **imported truth** from
 | `ok` / `warn` / `err` | `#A6E3A1` / `#F9E2AF` / `#F38BA8` | Catppuccin-ish status trio |
 | `line` / `dim` / `soft` / `sel` | `#2A3854` / `#7888A4` / `#94A3B8` / `#222D48` | chrome |
 
+Because the switch is a variable rewrite, **no component may hard-code a
+hex** — one that needs a literal (a Motion `animate` value, an inline style)
+reads it from `useTheme().colors`.
+
 Typography: **JetBrains Mono Variable** for everything — headings, body,
 buttons. It's a terminal. There is no second font.
 
 Motion: [Motion](https://motion.dev) for reveals, `AnimatePresence` badge
 swaps and scroll-linked progress; pure CSS keyframes for marquees, cursor
-blink and spinners. `MotionConfig reducedMotion="user"` + manual
-`useReducedMotion` guards on every JS-timer animation — the page is fully
+blink and spinners. `MotionConfig reducedMotion="user"` plus manual
+`useReducedMotion` guards on every JS-timer animation — the site is fully
 usable with animations off.
 
 ## Repo map
 
 ```
 src/
-├── App.tsx                  section order lives here
+├── App.tsx                  route → page, per-route <title> and description
 ├── index.css                @theme tokens, CRT overlay (.crt), grid bg, keyframes
-├── lib/anim.ts              shared variants (rise/stagger), GITHUB_URL
+├── pages/                   Home · Download · Rag · Serve · Architecture
+├── lib/
+│   ├── route-store.ts       the router (useSyncExternalStore + History API)
+│   ├── themes.ts            the ten TUI presets, verbatim from theme.rs
+│   ├── theme-store.ts       applies one to :root, persists the choice
+│   ├── release.ts           GitHub release fetch, cache, static fallback
+│   ├── use-release.ts       one shared in-flight promise
+│   ├── platform.ts          OS/arch detection (UA string + UA-CH hint)
+│   ├── install.ts           every command the site tells you to run
+│   └── anim.ts              shared variants, repo URLs
+├── i18n/locales/{en,ru}.ts  all copy; ru is typed `typeof en`
 └── components/
-    ├── Nav.tsx              fixed top bar
-    ├── Hero.tsx             logo + copy + install command + terminal
-    ├── Logo.tsx             the letter-pulse POOPRUSTEEK wordmark
-    ├── TerminalDemo.tsx     scripted typewriter session (edit SCRIPT to change it)
-    ├── ZeroDollars.tsx      $0.00 + ledger + PoW nonce ticker
-    ├── Features.tsx         8 cards + SectionTitle (exported, reused)
-    ├── GoalLoop.tsx         auto-cycling GOAL status badges
-    ├── Commands.tsx         double marquee
-    ├── TechStrip.tsx        stat counters
-    ├── Footer.tsx           CTA + credits
-    └── StatusBar.tsx        fixed bottom TUI status bar
+    ├── ui/                  Link · CopyLine · SectionTitle · PageHero ·
+    │                        PageSection · Ledger · CodeBlock · Corners
+    ├── Nav · Footer · StatusBar
+    ├── Hero · Logo · TerminalDemo · DownloadCTA · InstallSection
+    ├── ZeroDollars · Features · RagTeaser · GoalLoop · ServeTeaser
+    └── Commands · ThemeGallery · ThemePicker · TechStrip
 ```
 
 ---
